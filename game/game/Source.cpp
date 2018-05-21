@@ -54,34 +54,93 @@ private:
 class Car
 {
 public:
-	//The dimensions of the dot
+	//The dimensions of the car
 	static const int CAR_WIDTH = 90;
 	static const int CAR_HEIGHT = 80;
 
-	//Maximum axis velocity of the dot
+	//Maximum axis velocity of the car
 	static const int CAR_VEL = 5;
 
 	//Initializes the variables
 	Car();
 
-	//Takes key presses and adjusts the dot's velocity
+	//Takes key presses and adjusts the car's velocity
 	void handleEvent(SDL_Event& e);
 
-	//Moves the dot
+	//Moves the car
 	void move();
 
-	//Shows the dot on the screen relative to the camera
+	//Shows the car on the screen relative to the camera
 	void render();
 
 	
 
 private:
-	//The X and Y offsets of the dot
+	//The X and Y offsets of the car
 	int mPosX, mPosY;
 
-	//The velocity of the dot
+	//The velocity of the car
 	int mVelX, mVelY;
 };
+
+class Beer
+{
+public:
+	//The dimensions of the beer
+	static const int BEER_WIDTH = 16;
+	static const int BEER_HEIGHT = 61;
+
+	//Maximum axis velocity of the beer
+	static const int BEER_VEL = 8;
+
+	//Initializes the variables
+	Beer();
+
+	//Moves the beer
+	//void move();
+
+	//Shows the dot on the screen relative to the camera
+	void render();
+
+
+
+private:
+	//The X and Y offsets of the beer
+	int mPosX, mPosY;
+
+	//The velocity of the beer
+	int mVelX, mVelY;
+};
+
+class Vodka
+{
+public:
+	//The dimensions of the vodka
+	static const int VODKA_WIDTH = 16;
+	static const int VODKA_HEIGHT = 61;
+
+	//Maximum axis velocity of the vodka
+	static const int VODKA_VEL = 8;
+
+	//Initializes the variables
+	Vodka();
+
+	//Moves the vodka
+	//void move();
+
+	//Shows the dot on the screen relative to the camera
+	void render();
+
+
+
+private:
+	//The X and Y offsets of the vodka
+	int mPosX, mPosY;
+
+	//The velocity of the vodka
+	int mVelX, mVelY;
+};
+
 
 
 //Starts up SDL and creates window
@@ -102,6 +161,9 @@ SDL_Renderer* gRenderer = NULL;
 
 //Scene textures
 LTexture gCarTexture;
+LTexture gBeerTexture;
+LTexture gVodkaTexture;
+//LTexture gPoliceTexture;
 LTexture gBackgroundTexture;
 
 LTexture::LTexture()
@@ -271,6 +333,8 @@ void Car::handleEvent(SDL_Event& e)
 		//Adjust the velocity
 		switch (e.key.keysym.sym)
 		{
+		case SDLK_UP: mVelY -= CAR_VEL; break;
+		case SDLK_DOWN: mVelY += CAR_VEL; break;
 		case SDLK_LEFT: mVelX -= CAR_VEL; break;
 		case SDLK_RIGHT: mVelX += CAR_VEL; break;
 		}
@@ -281,6 +345,8 @@ void Car::handleEvent(SDL_Event& e)
 		//Adjust the velocity
 		switch (e.key.keysym.sym)
 		{
+		case SDLK_UP: mVelY += CAR_VEL; break;
+		case SDLK_DOWN: mVelY -= CAR_VEL; break;
 		case SDLK_LEFT: mVelX += CAR_VEL; break;
 		case SDLK_RIGHT: mVelX -= CAR_VEL; break;
 		}
@@ -288,22 +354,81 @@ void Car::handleEvent(SDL_Event& e)
 }
 void Car::move()
 {
-	//Move the dot left or right
+	//Move the car left or right
 	mPosX += mVelX;
 
-	//If the dot went too far to the left or right
+	//If the car went too far to the left or right
 	if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH))
 	{
 		//Move back
 		mPosX -= mVelX;
+	}
+	
+	//Move the car up or down
+	mPosY += mVelY;
+	
+	//If the car went too far up or down
+	if ((mPosY < 0) || (mPosY + CAR_HEIGHT > SCREEN_HEIGHT))
+	{
+		//Move back
+		mPosY -= mVelY;
 	}
 
 
 }
 void Car::render()
 {
-	//Show the dot
+	//Show the car
 	gCarTexture.render(mPosX , mPosY);
+}
+
+Beer::Beer()
+{
+	//Initialize the offsets
+	mPosX = 320;
+	mPosY = 0;
+
+	//Initialize the velocity
+	mVelX = 0;
+	mVelY = 0;
+}
+
+/*void Beer::move()
+{
+
+
+
+}*/
+
+void Beer::render()
+{
+	//Show the beer
+	gVodkaTexture.render(mPosX, mPosY);
+}
+
+
+Vodka::Vodka()
+{
+	//Initialize the offsets
+	mPosX = 480;
+	mPosY = 0;
+
+	//Initialize the velocity
+	mVelX = 0;
+	mVelY = 0;
+}
+
+/*void Vodka::move()
+{
+
+
+
+}*/
+
+void Vodka::render()
+{
+	//Show the vodka
+	gVodkaTexture.render(mPosX, mPosY);
 }
 
 
@@ -424,7 +549,7 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 
-			//The dot that will be moving around on the screen
+			//The car that will be moving around on the screen
 			Car car;
 
 
@@ -443,7 +568,7 @@ int main(int argc, char* args[])
 					//Handle input for the dot
 					car.handleEvent(e);
 				}
-				//Move the dot
+				//Move the car
 				car.move();
 
 				
@@ -455,7 +580,7 @@ int main(int argc, char* args[])
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
 
-				//Render Foo' to the screen
+				//Render car to the screen
 				car.render();
 				
 
