@@ -4,13 +4,17 @@ and may not be redistributed without written permission.*/
 //Using SDL, SDL_image, standard IO, and strings
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 #include <string>
-
-
+#include <ctime>
+#include <vector>
+#include <sstream>
+#include "Timer.h"
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+
 
 class LTexture
 {
@@ -23,6 +27,11 @@ public:
 
 	//Loads image at specified path
 	bool loadFromFile(std::string path);
+
+#ifdef _SDL_TTF_H
+	//Creates image from font string
+	bool loadFromRenderedText(std::string textureText, SDL_Color textColor);
+#endif
 
 	//Deallocates texture
 	void free();
@@ -59,7 +68,7 @@ public:
 	static const int CAR_HEIGHT = 80;
 
 	//Maximum axis velocity of the car
-	static const int CAR_VEL = 5;
+	static const int CAR_VEL = 7;
 
 	//Initializes the variables
 	Car();
@@ -72,8 +81,9 @@ public:
 
 	//Shows the car on the screen relative to the camera
 	void render();
-
 	
+
+
 
 private:
 	//The X and Y offsets of the car
@@ -83,36 +93,35 @@ private:
 	int mVelX, mVelY;
 };
 
-class Beer
+class Beer 
 {
 public:
 	//The dimensions of the beer
 	static const int BEER_WIDTH = 16;
 	static const int BEER_HEIGHT = 61;
 
-	//Maximum axis velocity of the beer
-	static const int BEER_VEL = 8;
-
 	//Initializes the variables
 	Beer();
-
+	
 	//Moves the beer
-	//void move();
+	void move();
 
 	//Shows the dot on the screen relative to the camera
 	void render();
+	int getX();
+	int getY();
 
 
 
 private:
 	//The X and Y offsets of the beer
-	int mPosX, mPosY;
-
+	double mPosX, mPosY;
+	
 	//The velocity of the beer
-	int mVelX, mVelY;
+	double mVelX, mVelY;
 };
 
-class Vodka
+/*class Vodka
 {
 public:
 	//The dimensions of the vodka
@@ -139,9 +148,7 @@ private:
 
 	//The velocity of the vodka
 	int mVelX, mVelY;
-};
-
-
+};*/
 
 //Starts up SDL and creates window
 bool init();
@@ -158,6 +165,8 @@ SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 
+//Globally used font
+TTF_Font* gFont = NULL;
 
 //Scene textures
 LTexture gCarTexture;
@@ -165,6 +174,10 @@ LTexture gBeerTexture;
 LTexture gVodkaTexture;
 //LTexture gPoliceTexture;
 LTexture gBackgroundTexture;
+LTexture gTimeTextTexture;
+LTexture gStartPromptTexture;
+LTexture gPausePromptTexture;
+
 
 LTexture::LTexture()
 {
@@ -363,10 +376,10 @@ void Car::move()
 		//Move back
 		mPosX -= mVelX;
 	}
-	
+
 	//Move the car up or down
 	mPosY += mVelY;
-	
+
 	//If the car went too far up or down
 	if ((mPosY < 0) || (mPosY + CAR_HEIGHT > SCREEN_HEIGHT))
 	{
@@ -379,35 +392,42 @@ void Car::move()
 void Car::render()
 {
 	//Show the car
-	gCarTexture.render(mPosX , mPosY);
+	gCarTexture.render(mPosX, mPosY);
 }
 
 Beer::Beer()
 {
+	
+
 	//Initialize the offsets
-	mPosX = 320;
+	mPosX= (rand() % 10)*80;
 	mPosY = 0;
+	
 
 	//Initialize the velocity
 	mVelX = 0;
-	mVelY = 0;
+	mVelY = 2;
 }
 
-/*void Beer::move()
+void Beer::move()
 {
-
-
-
-}*/
-
+	mPosY += mVelY;
+}
 void Beer::render()
 {
-	//Show the beer
-	gVodkaTexture.render(mPosX, mPosY);
+	
+	gBeerTexture.render(mPosX, mPosY);
+}
+int Beer::getX()
+{
+	return  mPosX;
+}
+int Beer::getY()
+{
+	return mPosY;
 }
 
-
-Vodka::Vodka()
+/*Vodka::Vodka()
 {
 	//Initialize the offsets
 	mPosX = 480;
@@ -418,20 +438,117 @@ Vodka::Vodka()
 	mVelY = 0;
 }
 
-/*void Vodka::move()
+void Vodka::move()
 {
-
-
-
-}*/
+}
 
 void Vodka::render()
 {
 	//Show the vodka
 	gVodkaTexture.render(mPosX, mPosY);
+}*/
+
+LTimer::LTimer()
+{
+	//Initialize the variables
+	mStartTicks = 0;
+	mPausedTicks = 0;
+
+	mPaused = false;
+	mStarted = false;
 }
 
+void LTimer::start()
+{
+	//Start the timer
+	mStarted = true;
 
+	//Unpause the timer
+	mPaused = false;
+
+	//Get the current clock time
+	mStartTicks = SDL_GetTicks();
+	mPausedTicks = 0;
+}
+
+void LTimer::stop()
+{
+	//Stop the timer
+	mStarted = false;
+
+	//Unpause the timer
+	mPaused = false;
+
+	//Clear tick variables
+	mStartTicks = 0;
+	mPausedTicks = 0;
+}
+
+void LTimer::pause()
+{
+	//If the timer is running and isn't already paused
+	if (mStarted && !mPaused)
+	{
+		//Pause the timer
+		mPaused = true;
+
+		//Calculate the paused ticks
+		mPausedTicks = SDL_GetTicks() - mStartTicks;
+		mStartTicks = 0;
+	}
+}
+
+void LTimer::unpause()
+{
+	//If the timer is running and paused
+	if (mStarted && mPaused)
+	{
+		//Unpause the timer
+		mPaused = false;
+
+		//Reset the starting ticks
+		mStartTicks = SDL_GetTicks() - mPausedTicks;
+
+		//Reset the paused ticks
+		mPausedTicks = 0;
+	}
+}
+
+Uint32 LTimer::getTicks()
+{
+	//The actual timer time
+	Uint32 time = 0;
+
+	//If the timer is running
+	if (mStarted)
+	{
+		//If the timer is paused
+		if (mPaused)
+		{
+			//Return the number of ticks when the timer was paused
+			time = mPausedTicks;
+		}
+		else
+		{
+			//Return the current time minus the start time
+			time = SDL_GetTicks() - mStartTicks;
+		}
+	}
+
+	return time;
+}
+
+bool LTimer::isStarted()
+{
+	//Timer is running and paused or unpaused
+	return mStarted;
+}
+
+bool LTimer::isPaused()
+{
+	//Timer is running and paused
+	return mPaused && mStarted;
+}
 
 bool init()
 {
@@ -480,6 +597,12 @@ bool init()
 					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
 					success = false;
 				}
+				//Initialize SDL_ttf
+				if (TTF_Init() == -1)
+				{
+					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+					success = false;
+				}
 			}
 		}
 	}
@@ -493,7 +616,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Foo' texture
-	if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/rsz_autozaprojekat.png"))
+	if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/CarFinalPic.png"))
 	{
 		printf("Failed to load Foo' texture image!\n");
 		success = false;
@@ -505,6 +628,39 @@ bool loadMedia()
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
+	//Load background texture
+	if (!gBeerTexture.loadFromFile("C:/Users/Uros/source/repos/game/BeerFinalPic.png"))
+	{
+		printf("Failed to load background texture image!\n");
+		success = false;
+	}
+	//Open the font
+	gFont = TTF_OpenFont("C:/Users/Uros/source/repos/game/lazy.ttf", 14);
+	if (gFont == NULL)
+	{
+		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
+		success = false;
+	}
+	else
+	{
+		//Set text color as black
+		SDL_Color textColor = { 255,255,255 };
+
+		//Load stop prompt texture
+		if (!gStartPromptTexture.loadFromRenderedText("S-Start/Stop", textColor))
+		{
+			printf("Unable to render start/stop prompt texture!\n");
+			success = false;
+		}
+
+		//Load pause prompt texture
+		if (!gPausePromptTexture.loadFromRenderedText("P-Pause/Unpause", textColor))
+		{
+			printf("Unable to render pause/unpause prompt texture!\n");
+			success = false;
+		}
+	}
+
 
 	return success;
 }
@@ -514,6 +670,13 @@ void close()
 	//Free loaded images
 	gCarTexture.free();
 	gBackgroundTexture.free();
+	gTimeTextTexture.free();
+	gStartPromptTexture.free();
+	gPausePromptTexture.free();
+
+	//Free global font
+	TTF_CloseFont(gFont);
+	gFont = NULL;
 
 	//Destroy window	
 	SDL_DestroyRenderer(gRenderer);
@@ -521,13 +684,18 @@ void close()
 	gWindow = NULL;
 	gRenderer = NULL;
 
-	//Quit SDL subsystems
+	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
 }
 
 int main(int argc, char* args[])
 {
+
+
+
+	srand(time(NULL));
+	
 	//Start up SDL and create window
 	if (!init())
 	{
@@ -549,8 +717,15 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 
+			//Set text color as black
+			SDL_Color textColor = { 255,255,255};
+
 			//The car that will be moving around on the screen
 			Car car;
+			Beer b;
+			LTimer timer;
+			//In memory text stream
+			std::stringstream timeText;
 
 
 			//While application is running
@@ -564,30 +739,71 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-
-					//Handle input for the dot
+					//Reset start time on return keypress
+					else if (e.type == SDL_KEYDOWN)
+					{
+						//Start/stop
+						if (e.key.keysym.sym == SDLK_s)
+						{
+							if (timer.isStarted())
+							{
+								timer.stop();
+							}
+							else
+							{
+								timer.start();
+							}
+						}
+						//Pause/unpause
+						else if (e.key.keysym.sym == SDLK_p)
+						{
+							if (timer.isPaused())
+							{
+								timer.unpause();
+							}
+							else
+							{
+								timer.pause();
+							}
+						}
+					}
 					car.handleEvent(e);
 				}
 				//Move the car
 				car.move();
-
 				
+				//Set text to be rendered
+				timeText.str("");
+				timeText << "Score:" << (timer.getTicks() / 1000.f);
+
+				//Render text
+				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
+				{
+					printf("Unable to render time texture!\n");
+				}
+
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
-
 
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
 
 				//Render car to the screen
 				car.render();
-				
 
+				//Render beer to the screen
+				b.render();
+				b.move();
+				gStartPromptTexture.render(30, 20);
+				gPausePromptTexture.render(30, 40);
+				gTimeTextTexture.render(30, 0);	
+			
 				//Update screen
 				SDL_RenderPresent(gRenderer);
+
 			}
-			
+
 		}
 	}
 
