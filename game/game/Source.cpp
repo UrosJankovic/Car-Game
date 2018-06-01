@@ -16,6 +16,7 @@ const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 
+
 class LTexture
 {
 public:
@@ -64,8 +65,8 @@ class Car
 {
 public:
 	//The dimensions of the car
-	static const int CAR_WIDTH = 90;
-	static const int CAR_HEIGHT = 80;
+	static const int CAR_WIDTH = 80;
+	static const int CAR_HEIGHT = 70;
 
 	//Maximum axis velocity of the car
 	static const int CAR_VEL = 7;
@@ -121,34 +122,7 @@ private:
 	double mVelX, mVelY;
 };
 
-/*class Vodka
-{
-public:
-	//The dimensions of the vodka
-	static const int VODKA_WIDTH = 16;
-	static const int VODKA_HEIGHT = 61;
 
-	//Maximum axis velocity of the vodka
-	static const int VODKA_VEL = 8;
-
-	//Initializes the variables
-	Vodka();
-
-	//Moves the vodka
-	//void move();
-
-	//Shows the dot on the screen relative to the camera
-	void render();
-
-
-
-private:
-	//The X and Y offsets of the vodka
-	int mPosX, mPosY;
-
-	//The velocity of the vodka
-	int mVelX, mVelY;
-};*/
 
 //Starts up SDL and creates window
 bool init();
@@ -171,7 +145,6 @@ TTF_Font* gFont = NULL;
 //Scene textures
 LTexture gCarTexture;
 LTexture gBeerTexture;
-LTexture gVodkaTexture;
 //LTexture gPoliceTexture;
 LTexture gBackgroundTexture;
 LTexture gTimeTextTexture;
@@ -371,11 +344,12 @@ void Car::move()
 	mPosX += mVelX;
 
 	//If the car went too far to the left or right
-	if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH))
+	if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH - 125)||(mPosX+CAR_WIDTH <SCREEN_WIDTH-435))
 	{
-		//Move back
+		//Move bac
 		mPosX -= mVelX;
 	}
+	
 
 	//Move the car up or down
 	mPosY += mVelY;
@@ -400,7 +374,7 @@ Beer::Beer()
 	
 
 	//Initialize the offsets
-	mPosX= (rand() % 10)*80;
+	mPosX= (rand()%10)*43.5f+125.0f;
 	mPosY = 0;
 	
 
@@ -416,39 +390,20 @@ void Beer::move()
 void Beer::render()
 {
 	
-	gBeerTexture.render(mPosX, mPosY);
+		gBeerTexture.render(mPosX, mPosY);
+	
 }
 int Beer::getX()
 {
-	return  mPosX;
+	return   mPosX;
 }
 int Beer::getY()
 {
 	return mPosY;
 }
 
-/*Vodka::Vodka()
-{
-	//Initialize the offsets
-	mPosX = 480;
-	mPosY = 0;
 
-	//Initialize the velocity
-	mVelX = 0;
-	mVelY = 0;
-}
-
-void Vodka::move()
-{
-}
-
-void Vodka::render()
-{
-	//Show the vodka
-	gVodkaTexture.render(mPosX, mPosY);
-}*/
-
-LTimer::LTimer()
+/*LTimer::LTimer()
 {
 	//Initialize the variables
 	mStartTicks = 0;
@@ -548,7 +503,7 @@ bool LTimer::isPaused()
 {
 	//Timer is running and paused
 	return mPaused && mStarted;
-}
+}*/
 
 bool init()
 {
@@ -567,6 +522,7 @@ bool init()
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
 			printf("Warning: Linear texture filtering not enabled!");
+
 		}
 
 		//Create window
@@ -616,14 +572,14 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Foo' texture
-	if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/CarFinalPic.png"))
+	if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/car.png"))
 	{
 		printf("Failed to load Foo' texture image!\n");
 		success = false;
 	}
 
 	//Load background texture
-	if (!gBackgroundTexture.loadFromFile("C:/Users/Uros/source/repos/game/CarBackground3d.png"))
+	if (!gBackgroundTexture.loadFromFile("C:/Users/Uros/source/repos/game/CarBackground2d.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
@@ -646,12 +602,6 @@ bool loadMedia()
 		//Set text color as black
 		SDL_Color textColor = { 255,255,255 };
 
-		//Load stop prompt texture
-		if (!gStartPromptTexture.loadFromRenderedText("S-Start/Stop", textColor))
-		{
-			printf("Unable to render start/stop prompt texture!\n");
-			success = false;
-		}
 
 		//Load pause prompt texture
 		if (!gPausePromptTexture.loadFromRenderedText("P-Pause/Unpause", textColor))
@@ -669,9 +619,9 @@ void close()
 {
 	//Free loaded images
 	gCarTexture.free();
+	gBeerTexture.free();
 	gBackgroundTexture.free();
 	gTimeTextTexture.free();
-	gStartPromptTexture.free();
 	gPausePromptTexture.free();
 
 	//Free global font
@@ -691,8 +641,6 @@ void close()
 
 int main(int argc, char* args[])
 {
-
-
 
 	srand(time(NULL));
 	
@@ -717,15 +665,17 @@ int main(int argc, char* args[])
 			//Event handler
 			SDL_Event e;
 
-			//Set text color as black
+			//Set text color as white
 			SDL_Color textColor = { 255,255,255};
 
 			//The car that will be moving around on the screen
 			Car car;
 			Beer b;
-			LTimer timer;
+			std::vector<Beer>beers;
+			/*LTimer timer;
+			Uint32 startTime = 0;
 			//In memory text stream
-			std::stringstream timeText;
+			std::stringstream timeText;*/
 
 
 			//While application is running
@@ -739,23 +689,12 @@ int main(int argc, char* args[])
 					{
 						quit = true;
 					}
-					//Reset start time on return keypress
+					/*Reset start time on return keypress
 					else if (e.type == SDL_KEYDOWN)
 					{
-						//Start/stop
-						if (e.key.keysym.sym == SDLK_s)
-						{
-							if (timer.isStarted())
-							{
-								timer.stop();
-							}
-							else
-							{
-								timer.start();
-							}
-						}
+
 						//Pause/unpause
-						else if (e.key.keysym.sym == SDLK_p)
+						if (e.key.keysym.sym == SDLK_p)
 						{
 							if (timer.isPaused())
 							{
@@ -766,22 +705,23 @@ int main(int argc, char* args[])
 								timer.pause();
 							}
 						}
-					}
+					}*/
 					car.handleEvent(e);
 				}
 				//Move the car
 				car.move();
+			
 				
-				//Set text to be rendered
+				/*Set text to be rendered-startTime
 				timeText.str("");
-				timeText << "Score:" << (timer.getTicks() / 1000.f);
+				timeText << "Score:" << timer.getTicks();
 
 				//Render text
 				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
 				{
 					printf("Unable to render time texture!\n");
 				}
-
+				*/
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
@@ -791,13 +731,12 @@ int main(int argc, char* args[])
 
 				//Render car to the screen
 				car.render();
-
-				//Render beer to the screen
 				b.render();
 				b.move();
-				gStartPromptTexture.render(30, 20);
-				gPausePromptTexture.render(30, 40);
-				gTimeTextTexture.render(30, 0);	
+
+				/*gStartPromptTexture.render(30, 20);
+				gPausePromptTexture.render(30, 20);
+				gTimeTextTexture.render(30, 0);	*/
 			
 				//Update screen
 				SDL_RenderPresent(gRenderer);
