@@ -1,11 +1,9 @@
-/*This source code copyrighted by Lazy Foo' Productions (2004-2015)
-and may not be redistributed without written permission.*/
-
 //Using SDL, SDL_image, standard IO, and strings
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <stdio.h>
+#include <iostream>
 #include <string>
 #include <ctime>
 #include <vector>
@@ -14,6 +12,8 @@ and may not be redistributed without written permission.*/
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
+
+
 
 
 class LTexture
@@ -50,6 +50,7 @@ public:
 
 	//Gets image dimensions
 	int getWidth();
+
 	int getHeight();
 
 private:
@@ -66,29 +67,19 @@ public:
 	//The dimensions of the car
 	static const int CAR_WIDTH = 80;
 	static const int CAR_HEIGHT = 70;
-
 	//Maximum axis velocity of the car
 	static const int CAR_VEL = 7;
-
 	//Initializes the variables
 	Car();
-
 	//Takes key presses and adjusts the car's velocity
 	void handleEvent(SDL_Event& e);
-
 	//Moves the car
 	void move();
-
 	//Shows the car on the screen relative to the camera
 	void render();
-
-
-
-
 private:
 	//The X and Y offsets of the car
 	int mPosX, mPosY;
-
 	//The velocity of the car
 	int mVelX, mVelY;
 };
@@ -107,6 +98,8 @@ public:
 
 	//Shows the beer on the screen relative to the camera
 	void render();
+	Uint32 moreBeer(Uint32 x, void *p);
+	
 	int getX();
 	int getY();
 
@@ -153,6 +146,8 @@ bool init();
 bool loadMedia();
 //Frees media and shuts down SDL
 void close();
+//Our test callback function
+Uint32 callback(Uint32 interval, void* param);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -164,9 +159,9 @@ LTexture gCarTexture; //Car Texture
 LTexture gBeerTexture; //Beer Texture
 LTexture gPoliceTexture; //Police Texture
 LTexture gBackgroundTexture; //Background Texture
-/*LTexture gTimeTextTexture; 
-LTexture gStartPromptTexture;
-LTexture gPausePromptTexture;*/ // Timer Textures
+							 /*LTexture gTimeTextTexture;
+							 LTexture gStartPromptTexture;
+							 LTexture gPausePromptTexture;*/ // Timer Textures
 
 LTexture::LTexture()
 {
@@ -381,8 +376,6 @@ Beer::Beer()
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
 	mPosY = 0;
-
-
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
@@ -405,6 +398,7 @@ int Beer::getY()
 {
 	return mPosY;
 }
+
 
 Police::Police()
 {
@@ -529,7 +523,7 @@ bool init()
 	bool success = true;
 
 	//Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
 	{
 		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
 		success = false;
@@ -540,8 +534,10 @@ bool init()
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
 			printf("Warning: Linear texture filtering not enabled!");
-
 		}
+
+		//Seed random
+		srand(SDL_GetTicks());
 
 		//Create window
 		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
@@ -660,6 +656,23 @@ void close()
 	SDL_Quit();
 }
 
+
+Uint32 callback(Uint32 interval, void* param)
+{
+	Beer b;
+	std::vector<Beer>beers;
+	beers.push_back(b);
+	for (auto &b : beers)
+	{
+		b.render();	
+		b.move();
+	}
+	std::cout << "rendering" << std::endl;
+	return 0;
+}
+
+
+
 int main(int argc, char* args[])
 {
 
@@ -688,6 +701,9 @@ int main(int argc, char* args[])
 
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
+		
+			//Set callback
+			SDL_TimerID timerID = SDL_AddTimer(1000, callback, NULL);
 
 			//The car that will be moving around on the screen
 			Car car;
@@ -697,7 +713,7 @@ int main(int argc, char* args[])
 			beers.push_back(b);
 			std::vector<Police>police;
 			police.push_back(p);
-			/*LTimer timer;
+			/*LTimer timer;	
 			Uint32 startTime = 0;
 			//In memory text stream
 			std::stringstream timeText;*/
@@ -743,7 +759,7 @@ int main(int argc, char* args[])
 				{
 				printf("Unable to render time texture!\n");
 				}*/
-				
+
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
@@ -751,13 +767,16 @@ int main(int argc, char* args[])
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
 
+
 				//Render car to the screen
 				car.render();
-				for (auto &b : beers)
+
+			/*	for (auto &b : beers)
 				{
 					b.render();
 					b.move();
-				}
+				}*/
+				
 				for (auto &p : police)
 				{
 					p.render();
@@ -770,6 +789,8 @@ int main(int argc, char* args[])
 
 				//Update screen
 				SDL_RenderPresent(gRenderer);
+				//Remove timer in case the call back was not called
+			SDL_RemoveTimer(timerID);
 
 			}
 		}
