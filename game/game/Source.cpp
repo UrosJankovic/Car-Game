@@ -8,7 +8,7 @@
 #include <ctime>
 #include <vector>
 #include <sstream>
-#include "Timer.h"
+
 //Screen dimension constants
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -98,11 +98,10 @@ public:
 
 	//Shows the beer on the screen relative to the camera
 	void render();
-	Uint32 moreBeer(Uint32 x, void *p);
+	std::vector<Beer>beers;
 	
 	int getX();
 	int getY();
-
 
 
 private:
@@ -139,6 +138,36 @@ private:
 	//The velocity of the police
 	double mVelX, mVelY;
 };
+class LTimer
+{
+public:
+	//Initializes variables
+	LTimer();
+
+	//The various clock actions
+	void start();
+	void stop();
+	void pause();
+	void unpause();
+
+	//Gets the timer's time
+	Uint32 getTicks();
+
+	//Checks the status of the timer
+	bool isStarted();
+	bool isPaused();
+
+private:
+	//The clock time when the timer started
+	Uint32 mStartTicks;
+
+	//The ticks stored when the timer was paused
+	Uint32 mPausedTicks;
+
+	//The timer status
+	bool mPaused;
+	bool mStarted;
+};
 
 //Starts up SDL and creates window
 bool init();
@@ -147,7 +176,7 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-Uint32 callback(Uint32 interval, void* param);
+Uint32 moreBeer(Uint32 interval, void* param);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -159,9 +188,9 @@ LTexture gCarTexture; //Car Texture
 LTexture gBeerTexture; //Beer Texture
 LTexture gPoliceTexture; //Police Texture
 LTexture gBackgroundTexture; //Background Texture
-							 /*LTexture gTimeTextTexture;
-							 LTexture gStartPromptTexture;
-							 LTexture gPausePromptTexture;*/ // Timer Textures
+LTexture gTimeTextTexture;
+LTexture gStartPromptTexture;							
+LTexture gPausePromptTexture; // Timer Textures														
 
 LTexture::LTexture()
 {
@@ -301,6 +330,101 @@ int LTexture::getHeight()
 	return mHeight;
 }
 
+LTimer::LTimer()
+{
+	//Initialize the variables
+	mStartTicks = 0;
+	mPausedTicks = 0;
+
+	mPaused = false;
+	mStarted = false;
+}
+void LTimer::start()
+{
+	//Start the timer
+	mStarted = true;
+
+	//Unpause the timer
+	mPaused = false;
+
+	//Get the current clock time
+	mStartTicks = SDL_GetTicks();
+	mPausedTicks = 0;
+}
+void LTimer::stop()
+{
+	//Stop the timer
+	mStarted = false;
+
+	//Unpause the timer
+	mPaused = false;
+
+	//Clear tick variables
+	mStartTicks = 0;
+	mPausedTicks = 0;
+}
+void LTimer::pause()
+{
+	//If the timer is running and isn't already paused
+	if (mStarted && !mPaused)
+	{
+		//Pause the timer
+		mPaused = true;
+
+		//Calculate the paused ticks
+		mPausedTicks = SDL_GetTicks() - mStartTicks;
+		mStartTicks = 0;
+	}
+}
+void LTimer::unpause()
+{
+	//If the timer is running and paused
+	if (mStarted && mPaused)
+	{
+		//Unpause the timer
+		mPaused = false;
+
+		//Reset the starting ticks
+		mStartTicks = SDL_GetTicks() - mPausedTicks;
+
+		//Reset the paused ticks
+		mPausedTicks = 0;
+	}
+}
+Uint32 LTimer::getTicks()
+{
+	//The actual timer time
+	Uint32 time = 0;
+
+	//If the timer is running
+	if (mStarted)
+	{
+		//If the timer is paused
+		if (mPaused)
+		{
+			//Return the number of ticks when the timer was paused
+			time = mPausedTicks;
+		}
+		else
+		{
+			//Return the current time minus the start time
+			time = SDL_GetTicks() - mStartTicks;
+		}
+	}
+
+	return time;
+}
+bool LTimer::isStarted()
+{
+	//Timer is running and paused or unpaused
+	return mStarted;
+}
+bool LTimer::isPaused()
+{
+	//Timer is running and paused
+	return mPaused && mStarted;
+}
+
 Car::Car()
 {
 	//Initialize the offsets
@@ -432,91 +556,6 @@ int Police::getY()
 	return mPosY;
 }
 
-/*LTimer::LTimer()
-{
-//Initialize the variables
-mStartTicks = 0;
-mPausedTicks = 0;
-mPaused = false;
-mStarted = false;
-}
-void LTimer::start()
-{
-//Start the timer
-mStarted = true;
-//Unpause the timer
-mPaused = false;
-//Get the current clock time
-mStartTicks = SDL_GetTicks();
-mPausedTicks = 0;
-}
-void LTimer::stop()
-{
-//Stop the timer
-mStarted = false;
-//Unpause the timer
-mPaused = false;
-//Clear tick variables
-mStartTicks = 0;
-mPausedTicks = 0;
-}
-void LTimer::pause()
-{
-//If the timer is running and isn't already paused
-if (mStarted && !mPaused)
-{
-//Pause the timer
-mPaused = true;
-//Calculate the paused ticks
-mPausedTicks = SDL_GetTicks() - mStartTicks;
-mStartTicks = 0;
-}
-}
-void LTimer::unpause()
-{
-//If the timer is running and paused
-if (mStarted && mPaused)
-{
-//Unpause the timer
-mPaused = false;
-//Reset the starting ticks
-mStartTicks = SDL_GetTicks() - mPausedTicks;
-//Reset the paused ticks
-mPausedTicks = 0;
-}
-}
-Uint32 LTimer::getTicks()
-{
-//The actual timer time
-Uint32 time = 0;
-//If the timer is running
-if (mStarted)
-{
-//If the timer is paused
-if (mPaused)
-{
-//Return the number of ticks when the timer was paused
-time = mPausedTicks;
-}
-else
-{
-//Return the current time minus the start time
-time = SDL_GetTicks() - mStartTicks;
-}
-}
-return time;
-}
-bool LTimer::isStarted()
-{
-//Timer is running and paused or unpaused
-return mStarted;
-}
-bool LTimer::isPaused()
-{
-//Timer is running and paused
-return mPaused && mStarted;
-}*/
-
 bool init()
 {
 	//Initialization flag
@@ -617,17 +656,17 @@ bool loadMedia()
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
 		success = false;
 	}
-	//else
-	//{
-	//	//Set text color as black
-	//	SDL_Color textColor = { 255,255,255 };
-	//	//Load pause prompt texture
-	//	if (!gPausePromptTexture.loadFromRenderedText("P-Pause/Unpause", textColor))
-	//	{
-	//		printf("Unable to render pause/unpause prompt texture!\n");
-	//		success = false;
-	//	}
-	//}
+	else
+	{
+		//Set text color as black
+		SDL_Color textColor = { 255,255,255 };
+		//Load pause prompt texture
+		if (!gPausePromptTexture.loadFromRenderedText("P-Pause/Unpause", textColor))
+		{
+			printf("Unable to render pause/unpause prompt texture!\n");
+			success = false;
+		}
+	}
 	return success;
 }
 
@@ -638,8 +677,8 @@ void close()
 	gBeerTexture.free();
 	gPoliceTexture.free();
 	gBackgroundTexture.free();
-	/*gTimeTextTexture.free();
-	gPausePromptTexture.free();*/
+	gTimeTextTexture.free();
+	gPausePromptTexture.free();
 
 	//Free global font
 	TTF_CloseFont(gFont);
@@ -657,17 +696,15 @@ void close()
 }
 
 
-Uint32 callback(Uint32 interval, void* param)
+Uint32 moreBeer(Uint32 x, void *p)
 {
 	Beer b;
-	std::vector<Beer>beers;
-	beers.push_back(b);
-	for (auto &b : beers)
+	b.beers.push_back(b);
+	for (auto &b : b.beers)
 	{
-		b.render();	
 		b.move();
 	}
-	std::cout << "rendering" << std::endl;
+	std::cout << "moving" << std::endl;
 	return 0;
 }
 
@@ -701,22 +738,24 @@ int main(int argc, char* args[])
 
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
-		
+
 			//Set callback
-			SDL_TimerID timerID = SDL_AddTimer(1000, callback, NULL);
+			SDL_TimerID timerID;
+			timerID = SDL_AddTimer(1000, moreBeer, NULL);
 
 			//The car that will be moving around on the screen
 			Car car;
 			Beer b;
 			Police p;
-			std::vector<Beer>beers;
-			beers.push_back(b);
+
+			b.beers.push_back(b);
+
 			std::vector<Police>police;
 			police.push_back(p);
-			/*LTimer timer;	
+			LTimer timer;
 			Uint32 startTime = 0;
 			//In memory text stream
-			std::stringstream timeText;*/
+			std::stringstream timeText;
 
 
 			//While application is running
@@ -731,34 +770,50 @@ int main(int argc, char* args[])
 						quit = true;
 					}
 
-					/*Reset start time on return keypress
+					//Reset start time on return keypress
 					else if (e.type == SDL_KEYDOWN)
 					{
-					//Pause/unpause
-					if (e.key.keysym.sym == SDLK_p)
-					{
-					if (timer.isPaused())
-					{
-					timer.unpause();
+						
+						//Start/stop
+						if (e.key.keysym.sym == SDLK_s)
+						{
+							if (timer.isStarted())
+							{
+								timer.stop();
+							}
+							else
+							{
+								timer.start();
+							}
+						}
+						//Pause/unpause
+						else if (e.key.keysym.sym == SDLK_p)
+						{
+							if (timer.isPaused())
+							{
+								timer.unpause();
+							}
+							else
+							{
+								timer.pause();
+							}
+						}
+						
 					}
-					else
-					{
-					timer.pause();
-					}*/
 
 					car.handleEvent(e);
 				}
 				//Move the car
 				car.move();
 
-				/*Set text to be rendered-startTime
+				//Set text to be rendered-startTime
 				timeText.str("");
 				timeText << "Score:" << timer.getTicks();
 				//Render text
 				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
 				{
-				printf("Unable to render time texture!\n");
-				}*/
+					printf("Unable to render time texture!\n");
+				}
 
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -771,31 +826,30 @@ int main(int argc, char* args[])
 				//Render car to the screen
 				car.render();
 
-			/*	for (auto &b : beers)
+				for (auto &b : b.beers)
 				{
 					b.render();
-					b.move();
-				}*/
-				
+				}
 				for (auto &p : police)
 				{
 					p.render();
 					p.move();
 				}
 
-				/*gStartPromptTexture.render(30, 20);
+				gStartPromptTexture.render(30, 20);
 				gPausePromptTexture.render(30, 20);
-				gTimeTextTexture.render(30, 0);	*/
+				gTimeTextTexture.render(30, 0);
 
 				//Update screen
 				SDL_RenderPresent(gRenderer);
 				//Remove timer in case the call back was not called
-			SDL_RemoveTimer(timerID);
+				SDL_RemoveTimer(timerID);
 
 			}
 		}
 	}
-	//Free resources and close SDL
-	close();
-	return 0;
+		//Free resources and close SDL
+		close();
+		return 0;
+	
 }
