@@ -13,9 +13,6 @@
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
-
-
-
 class LTexture
 {
 public:
@@ -61,28 +58,6 @@ private:
 	int mWidth;
 	int mHeight;
 };
-class Car
-{
-public:
-	//The dimensions of the car
-	static const int CAR_WIDTH = 80;
-	static const int CAR_HEIGHT = 70;
-	//Maximum axis velocity of the car
-	static const int CAR_VEL = 7;
-	//Initializes the variables
-	Car();
-	//Takes key presses and adjusts the car's velocity
-	void handleEvent(SDL_Event& e);
-	//Moves the car
-	void move();
-	//Shows the car on the screen relative to the camera
-	void render();
-private:
-	//The X and Y offsets of the car
-	int mPosX, mPosY;
-	//The velocity of the car
-	int mVelX, mVelY;
-};
 class Beer
 {
 public:
@@ -95,14 +70,13 @@ public:
 
 	//Moves the beer
 	void move();
-
+	Beer *b;
+	std::vector<Beer*>beers;
 	//Shows the beer on the screen relative to the camera
 	void render();
-	std::vector<Beer>beers;
-	
 	int getX();
 	int getY();
-
+	SDL_Rect BeerPos;
 
 private:
 	//The X and Y offsets of the beer
@@ -129,14 +103,38 @@ public:
 	int getX();
 	int getY();
 
-
-
 private:
 	//The X and Y offsets of the police
 	double mPosX, mPosY;
 
 	//The velocity of the police
 	double mVelX, mVelY;
+};
+class Car
+{
+public:
+	//The dimensions of the car
+	static const int CAR_WIDTH = 80;
+	static const int CAR_HEIGHT = 70;
+	//Maximum axis velocity of the car
+	static const int CAR_VEL = 7;
+	//Initializes the variables
+	Car();
+	//Takes key presses and adjusts the car's velocity
+	void handleEvent(SDL_Event& e);
+	//Moves the car
+	void move();
+	//Shows the car on the screen relative to the camera
+	void render();
+	int getX();
+	int getY();
+
+	//SDL_Rect CarPos;
+private:
+	//The X and Y offsets of the car
+	int mPosX, mPosY;
+	//The velocity of the car
+	int mVelX, mVelY;
 };
 class LTimer
 {
@@ -176,21 +174,23 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-Uint32 moreBeer(Uint32 interval, void* param);
+//Uint32 moreBeer(Uint32 interval, void* param);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
 //Globally used font
 TTF_Font* gFont = NULL;
+
 //Scene textures
 LTexture gCarTexture; //Car Texture
 LTexture gBeerTexture; //Beer Texture
 LTexture gPoliceTexture; //Police Texture
 LTexture gBackgroundTexture; //Background Texture
 LTexture gTimeTextTexture;
-LTexture gStartPromptTexture;							
+LTexture gStartPromptTexture;
 LTexture gPausePromptTexture; // Timer Textures														
+
 
 LTexture::LTexture()
 {
@@ -434,6 +434,7 @@ Car::Car()
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 0;
+	
 }
 void Car::handleEvent(SDL_Event& e)
 {
@@ -492,6 +493,14 @@ void Car::render()
 	//Show the car
 	gCarTexture.render(mPosX, mPosY);
 }
+int Car::getX()
+{
+	return mPosX;
+}
+int Car::getY()
+{
+	return mPosY;
+}
 
 Beer::Beer()
 {
@@ -503,10 +512,30 @@ Beer::Beer()
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
+	BeerPos.x = mPosX;
+	BeerPos.y = mPosY;
+	BeerPos.w = BEER_WIDTH;
+	BeerPos.h = BEER_HEIGHT;
 }
 void Beer::move()
 {
 	mPosY += mVelY;
+	if (SDL_GetTicks() > 5000)
+	{
+		mPosY += 1;
+	}
+	else if (SDL_GetTicks() > 10000)
+	{
+		mPosY += 2;
+	}
+	else if (SDL_GetTicks() > 15000)
+	{
+		mPosY += 3;
+	}
+	else if (SDL_GetTicks() > 20000)
+	{
+		mPosY += 4;
+	}
 }
 void Beer::render()
 {
@@ -526,12 +555,9 @@ int Beer::getY()
 
 Police::Police()
 {
-
-
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
 	mPosY = 0;
-
 
 	//Initialize the velocity
 	mVelX = 0;
@@ -540,6 +566,22 @@ Police::Police()
 void Police::move()
 {
 	mPosY += mVelY;
+	if (SDL_GetTicks() > 5000)
+	{
+		mPosY += 1;
+	}
+	else if (SDL_GetTicks() > 10000)
+	{
+		mPosY += 2;
+	}
+	else if (SDL_GetTicks() > 15000)
+	{
+		mPosY += 3;
+	}
+	else if (SDL_GetTicks() > 20000)
+	{
+		mPosY += 4;
+	}
 }
 void Police::render()
 {
@@ -579,7 +621,7 @@ bool init()
 		srand(SDL_GetTicks());
 
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("Uros Jankovic", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
 		{
 			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
@@ -649,6 +691,7 @@ bool loadMedia()
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
+
 	//Open the font
 	gFont = TTF_OpenFont("C:/Users/Uros/source/repos/game/lazy.ttf", 14);
 	if (gFont == NULL)
@@ -666,7 +709,16 @@ bool loadMedia()
 			printf("Unable to render pause/unpause prompt texture!\n");
 			success = false;
 		}
+		//Load exit prompt texture
+		if (!gStartPromptTexture.loadFromRenderedText("Press Esc to exit!", textColor))
+		{
+			printf("Unable to render pause/unpause prompt texture!\n");
+			success = false;
+		}
+	
 	}
+	
+	
 	return success;
 }
 
@@ -695,14 +747,105 @@ void close()
 	SDL_Quit();
 }
 
+bool checkCollision(Beer* b, Car* car)
+{
+
+	std::vector<Beer*> beers;
+	beers.push_back(b);
+	//getting position of obj1
+	//u need to have double (or int) function in your class to return x and y positions, width and height
+	double ex = b->getX();
+	double ey = b->getY();
+	double ew = b->BEER_WIDTH;
+	double eh = b->BEER_HEIGHT;
+	//getting position of obj2
+	double hx = car->getX();
+	double hy =car->getY();
+	double hw = car->CAR_WIDTH;
+	double hh = car->CAR_HEIGHT;
+	//Calculate the sides of obj1
+	//in SDL position x and y are at left top corner of the tuxture, so u need to calculate max X position (right side) and max y position (bottom)
+	double leftH = hx;
+	double rightH = hx + hw;
+	double topH = hy;
+	double bottomH = hy + hh;
+	//	Calculate the sides of obj2
+	double leftE = ex;
+	double rightE = ex + ew;
+	double topE = ey;
+	double bottomE = ey + eh;
+	//check if objects are in different areas (no collision)
+	if (bottomH <= topH)
+	{
+		return false;
+	}
+	if (topH >= bottomE)
+	{
+		return false;
+	}
+	if (rightH <= leftE)
+	{
+		return false;
+	}
+	if (leftH >= rightE)
+	{
+		return false;
+	}
+	//if there is a collision
+	return true;
+}//checks for collision of object of class Hero and object of class Weapon
+bool checkCollisionPolice(Police* p, Car* car)
+{
+	std::vector<Police*>police;
+	police.push_back(p);
+	//getting position of police car
+	double ex = p->getX();
+	double ey = p->getY();
+	double ew = p->POLICE_WIDTH;
+	double eh = p->POLICE_HEIGHT;
+	//getting position of player's car
+	double hx = car->getX();
+	double hy = car->getY();
+	double hw = car->CAR_WIDTH;
+	double hh = car->CAR_HEIGHT;
+	//Calculate the sides of player's car
+	double leftH = hx;
+	double rightH = hx + hw;
+	double topH = hy;
+	double bottomH = hy + hh;
+	//	Calculate the sides of police car
+	double leftE = ex;
+	double rightE = ex + ew;
+	double topE = ey;
+	double bottomE = ey + eh;
+	//check if objects are in different areas (no collision)
+	if (bottomH <= topH)
+	{
+		return false;
+	}
+	if (topH >= bottomE)
+	{
+		return false;
+	}
+	if (rightH <= leftE)
+	{
+		return false;
+	}
+	if (leftH >= rightE)
+	{
+		return false;
+	}
+	//if there is a collision
+	return true;
+}
 
 Uint32 moreBeer(Uint32 x, void *p)
 {
 	Beer b;
-	b.beers.push_back(b);
+	b.beers.push_back(&b);
 	for (auto &b : b.beers)
 	{
-		b.move();
+		b->move();
 	}
 	std::cout << "moving" << std::endl;
 	return 0;
@@ -729,7 +872,6 @@ int main(int argc, char* args[])
 		}
 		else
 		{
-
 			//Main loop flag
 			bool quit = false;
 
@@ -738,29 +880,30 @@ int main(int argc, char* args[])
 
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
-
+			
 			//Set callback
-			SDL_TimerID timerID;
-			timerID = SDL_AddTimer(1000, moreBeer, NULL);
+			SDL_TimerID timerID= (2*500, moreBeer, NULL);
+			
 
 			//The car that will be moving around on the screen
 			Car car;
 			Beer b;
 			Police p;
-
-			b.beers.push_back(b);
-
+			//std::vector<Beer>beers;
+			b.beers.push_back(&b);
 			std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
 			Uint32 startTime = 0;
 			//In memory text stream
 			std::stringstream timeText;
+		
 
-
+			timer.start();
 			//While application is running
 			while (!quit)
 			{
+				
 				//Handle events on queue
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -773,48 +916,63 @@ int main(int argc, char* args[])
 					//Reset start time on return keypress
 					else if (e.type == SDL_KEYDOWN)
 					{
-						
-						//Start/stop
-						if (e.key.keysym.sym == SDLK_s)
-						{
-							if (timer.isStarted())
-							{
-								timer.stop();
-							}
-							else
-							{
-								timer.start();
-							}
-						}
-						//Pause/unpause
-						else if (e.key.keysym.sym == SDLK_p)
-						{
-							if (timer.isPaused())
-							{
-								timer.unpause();
-							}
-							else
-							{
-								timer.pause();
-							}
-						}
-						
-					}
 
+						//Pause/unpause
+						 if (e.key.keysym.sym == SDLK_p)
+						{
+							 if (timer.isPaused())
+							 {
+								 timer.unpause();
+							 }
+							 else { timer.pause(); }
+						}
+						 if (e.key.keysym.sym == SDLK_ESCAPE)
+						 {
+							 exit(0);
+						 }
+					
+					}
+					
 					car.handleEvent(e);
 				}
 				//Move the car
 				car.move();
 
+			
+				for (auto &b:b.beers)
+				{
+					if (checkCollision(&*b, &car) == true)
+					{
+						b->beers.clear();
+						startTime = timer.getTicks() + 5000;
+					    
+						std::cout << "Collision with beer!" << std::endl;
+					}
+				}
+				
+				//If collision
+				for (auto &p:police)
+				{
+					if (checkCollisionPolice(&p, &car) == true)
+					{
+						police.clear();
+						timer.pause();
+						
+						std::cout << "Your score is:" << timer.getTicks() + startTime;
+						std::cout << "Collision with police!" << std::endl;
+						
+					}
+				}
+				
+
 				//Set text to be rendered-startTime
 				timeText.str("");
-				timeText << "Score:" << timer.getTicks();
+				timeText << "Score:" << timer.getTicks()+startTime;
 				//Render text
 				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
 				{
 					printf("Unable to render time texture!\n");
 				}
-
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
@@ -822,34 +980,35 @@ int main(int argc, char* args[])
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
 
-
 				//Render car to the screen
 				car.render();
 
+				
 				for (auto &b : b.beers)
 				{
-					b.render();
+					b->render();
+					//b.move();
 				}
-				for (auto &p : police)
+			    for (auto &p : police)
 				{
 					p.render();
 					p.move();
 				}
-
-				gStartPromptTexture.render(30, 20);
+				
+				gStartPromptTexture.render(30, 40);
 				gPausePromptTexture.render(30, 20);
 				gTimeTextTexture.render(30, 0);
+			
 
 				//Update screen
 				SDL_RenderPresent(gRenderer);
-				//Remove timer in case the call back was not called
-				SDL_RemoveTimer(timerID);
-
+				
 			}
+			SDL_RemoveTimer(timerID);
 		}
 	}
-		//Free resources and close SDL
-		close();
-		return 0;
-	
+	//Free resources and close SDL
+	close();
+	return 0;
+
 }
