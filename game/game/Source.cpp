@@ -839,28 +839,42 @@ bool checkCollisionPolice(Police* p, Car* car)
 
 
 Beer b;
+std::vector<Beer>beers;
+Police p;
+std::vector<Police>police;
 
 Uint32 moreBeermove(Uint32 x, void *p)
 {
-	
-	b.move();
-    
+	for (auto&b : beers)
+	{
+		b.move();
+	}
 	return 0;
 }
-std::vector<Beer>beers;
 Uint32 moreBeerrender(Uint32 y, void *q)
 {
-	
-	
 	for (auto&b : beers)
 	{
 		b.render();
-	}
-	
+	}	
 	return 0;
 }
-
-
+Uint32 morePolicemove(Uint32 u, void *w)
+{
+	for (auto&p : police)
+	{
+		p.move();
+	}
+	return 0;
+}
+Uint32 morePolicerender(Uint32 o, void*l)
+{
+	for (auto&p : police)
+	{
+		p.render();
+	}
+	return 0;
+}
 
 
 int main(int argc, char* args[])
@@ -891,21 +905,21 @@ int main(int argc, char* args[])
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
 			
-			SDL_TimerID timerID = SDL_AddTimer(1000, moreBeermove, NULL);
-			//SDL_TimerID timerID1 = SDL_AddTimer(1000, moreBeerrender, NULL);
+			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
+			SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
+			SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
+			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
 
-			
-			
 
 			//The car that will be moving around on the screen
 			Car car;
-			Police p;
+			//Police p;
 			//Beer b;
 			//std::vector<Beer>beers;
 			beers.push_back(b);
 			
 			
-			std::vector<Police>police;
+			//std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
 			Uint32 startTime = 0;
@@ -951,7 +965,9 @@ int main(int argc, char* args[])
 				}
 				//Move the car
 				car.move();
-				SDL_AddTimer(1000, moreBeermove, NULL);
+				SDL_AddTimer(2000, moreBeermove, NULL);
+				SDL_AddTimer(1000, morePolicemove, NULL);
+
 				for (auto &b:beers)
 				{
 					if (checkCollision(&b, &car) == true)
@@ -996,14 +1012,14 @@ int main(int argc, char* args[])
 				//Render car to the screen
 				car.render();
 				
+				for (auto&b : beers)
+				{
+					SDL_AddTimer(2000, moreBeerrender, NULL);
 				
-				SDL_AddTimer(1000, moreBeerrender, NULL);
-				
-				
+				}
 			    for (auto &p : police)
 				{
-					p.render();
-					p.move();
+					SDL_AddTimer(1000, morePolicerender, NULL);
 				}
 				
 				gStartPromptTexture.render(30, 40);
@@ -1016,7 +1032,7 @@ int main(int argc, char* args[])
 				
 			}
 			SDL_RemoveTimer(timerID);
-			//SDL_RemoveTimer(timerID1);
+			SDL_RemoveTimer(timerID1);
 		
 		}
 	}
