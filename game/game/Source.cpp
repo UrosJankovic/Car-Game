@@ -176,7 +176,7 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-Uint32 moreBeer(Uint32 x, void* p);
+//Uint32 moreBeer(Uint32 x, void* p);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -508,7 +508,7 @@ Beer::Beer()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = 0;
+	mPosY = -2;
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
@@ -837,19 +837,29 @@ bool checkCollisionPolice(Police* p, Car* car)
 	return true;
 }
 
-Uint32 moreBeer(Uint32 x, void *p)
+
+Beer b;
+
+Uint32 moreBeermove(Uint32 x, void *p)
 {
-
-
-	Beer b;
-	std::vector<Beer>beers;
-	beers.push_back(b);
-	for (auto&b : beers)
-	{
-		b.move();
-	}
+	
+	b.move();
+    
 	return 0;
 }
+std::vector<Beer>beers;
+Uint32 moreBeerrender(Uint32 y, void *q)
+{
+	
+	
+	for (auto&b : beers)
+	{
+		b.render();
+	}
+	
+	return 0;
+}
+
 
 
 
@@ -881,20 +891,20 @@ int main(int argc, char* args[])
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
 			
-		
+			SDL_TimerID timerID = SDL_AddTimer(1000, moreBeermove, NULL);
+			//SDL_TimerID timerID1 = SDL_AddTimer(1000, moreBeerrender, NULL);
+
+			
 			
 
 			//The car that will be moving around on the screen
 			Car car;
-			Beer b;
 			Police p;
-			std::vector<Beer>beers;
+			//Beer b;
+			//std::vector<Beer>beers;
 			beers.push_back(b);
 			
-
-			//Set callback
-			SDL_TimerID timerID = SDL_AddTimer(1000, moreBeer, NULL);
-			std::cout << timerID;
+			
 			std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
@@ -941,16 +951,15 @@ int main(int argc, char* args[])
 				}
 				//Move the car
 				car.move();
-
-			
+				SDL_AddTimer(1000, moreBeermove, NULL);
 				for (auto &b:beers)
 				{
 					if (checkCollision(&b, &car) == true)
 					{
 						beers.clear();
-						startTime = timer.getTicks() + 5000;
+						startTime = timer.getTicks() + 3000;
 					    
-						std::cout << "Collision with beer!Plus 500 points!" << std::endl;
+						std::cout << "Collision with beer! Plus 3000 points!" << std::endl;
 					}
 				}
 				
@@ -986,13 +995,10 @@ int main(int argc, char* args[])
 
 				//Render car to the screen
 				car.render();
-
 				
-				for (auto &b : beers)
-				{
-					b.render();
-				//	b->move();
-				}
+				
+				SDL_AddTimer(1000, moreBeerrender, NULL);
+				
 				
 			    for (auto &p : police)
 				{
@@ -1010,6 +1016,7 @@ int main(int argc, char* args[])
 				
 			}
 			SDL_RemoveTimer(timerID);
+			//SDL_RemoveTimer(timerID1);
 		
 		}
 	}
