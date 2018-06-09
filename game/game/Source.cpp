@@ -837,7 +837,7 @@ bool checkCollisionPolice(Police* p, Car* car)
 	return true;
 }
 
-
+//ERROR THAT THEY ARE RENDERED AT SAME POSITION EVERY TIME, AND IT RENDERS ONLY ONE OF EACH
 Beer b;
 std::vector<Beer>beers;
 Police p;
@@ -905,10 +905,10 @@ int main(int argc, char* args[])
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
 			
-			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
-			SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
-			SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
-			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
+			SDL_TimerID timerID;// = SDL_AddTimer(2000, moreBeermove, NULL);
+			SDL_TimerID timerID1;// = SDL_AddTimer(2000, moreBeerrender, NULL);
+			SDL_TimerID timerID2; //= SDL_AddTimer(1000, morePolicerender, NULL);
+			SDL_TimerID timerID3; //= SDL_AddTimer(1000, morePolicemove, NULL);
 
 
 			//The car that will be moving around on the screen
@@ -965,8 +965,12 @@ int main(int argc, char* args[])
 				}
 				//Move the car
 				car.move();
-				SDL_AddTimer(2000, moreBeermove, NULL);
-				SDL_AddTimer(1000, morePolicemove, NULL);
+
+				//MOVING THE POLICE AND BEER HERE
+				timerID = SDL_AddTimer(2000, moreBeermove, NULL);
+				
+				timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
+				
 
 				for (auto &b:beers)
 				{
@@ -1012,14 +1016,16 @@ int main(int argc, char* args[])
 				//Render car to the screen
 				car.render();
 				
+				//RENDERING BEER HERE
 				for (auto&b : beers)
 				{
-					SDL_AddTimer(2000, moreBeerrender, NULL);
-				
+					timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
+					
 				}
+				//RENDERING POLICE HERE
 			    for (auto &p : police)
 				{
-					SDL_AddTimer(1000, morePolicerender, NULL);
+					timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
 				}
 				
 				gStartPromptTexture.render(30, 40);
@@ -1033,6 +1039,8 @@ int main(int argc, char* args[])
 			}
 			SDL_RemoveTimer(timerID);
 			SDL_RemoveTimer(timerID1);
+			SDL_RemoveTimer(timerID2);
+			SDL_RemoveTimer(timerID3);
 		
 		}
 	}
