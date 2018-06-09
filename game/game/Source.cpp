@@ -70,8 +70,10 @@ public:
 
 	//Moves the beer
 	void move();
-	Beer *b;
-	std::vector<Beer*>beers;
+
+	//Beer *b;
+	//std::vector<Beer*>beers;
+
 	//Shows the beer on the screen relative to the camera
 	void render();
 	int getX();
@@ -836,10 +838,11 @@ bool checkCollisionPolice(Police* p, Car* car)
 Uint32 moreBeer(Uint32 x, void *p)
 {
 	Beer b;
-	b.beers.push_back(&b);
-	for (auto&b : b.beers)
+	std::vector<Beer>beers;
+	beers.push_back(b);
+	for (auto&b : beers)
 	{
-		b->move();
+		b.move();
 	}
 	return 0;
 }
@@ -881,12 +884,13 @@ int main(int argc, char* args[])
 			Car car;
 			Beer b;
 			Police p;
-			b.beers.push_back(&b);
+			std::vector<Beer>beers;
+			beers.push_back(b);
 			
 
 			//Set callback
 			SDL_TimerID timerID = SDL_AddTimer(1000, moreBeer, NULL);
-
+			std::cout << timerID;
 			std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
@@ -935,11 +939,11 @@ int main(int argc, char* args[])
 				car.move();
 
 			
-				for (auto &b:b.beers)
+				for (auto &b:beers)
 				{
-					if (checkCollision(&*b, &car) == true)
+					if (checkCollision(&b, &car) == true)
 					{
-						b->beers.clear();
+						beers.clear();
 						startTime = timer.getTicks() + 5000;
 					    
 						std::cout << "Collision with beer!Plus 500 points!" << std::endl;
@@ -980,9 +984,9 @@ int main(int argc, char* args[])
 				car.render();
 
 				
-				for (auto &b : b.beers)
+				for (auto &b : beers)
 				{
-					b->render();
+					b.render();
 				//	b->move();
 				}
 				
