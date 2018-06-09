@@ -516,15 +516,16 @@ Beer::Beer()
 void Beer::move()
 {
 	mPosY += mVelY;
-	if (SDL_GetTicks() > 5000)
+
+	if (SDL_GetTicks() > 5000 && SDL_GetTicks()<10000)
 	{
 		mPosY += 1;
 	}
-	else if (SDL_GetTicks() > 10000)
+	else if (SDL_GetTicks() > 10000 && SDL_GetTicks()<15000)
 	{
 		mPosY += 2;
 	}
-	else if (SDL_GetTicks() > 15000)
+	else if (SDL_GetTicks() > 15000&&SDL_GetTicks()<20000)
 	{
 		mPosY += 3;
 	}
@@ -562,15 +563,16 @@ Police::Police()
 void Police::move()
 {
 	mPosY += mVelY;
-	if (SDL_GetTicks() > 5000)
+
+	if (SDL_GetTicks() > 5000 && SDL_GetTicks()<10000)
 	{
 		mPosY += 1;
 	}
-	else if (SDL_GetTicks() > 10000)
+	else if (SDL_GetTicks() > 10000 && SDL_GetTicks()<15000)
 	{
 		mPosY += 2;
 	}
-	else if (SDL_GetTicks() > 15000)
+	else if (SDL_GetTicks() > 15000 && SDL_GetTicks()<20000)
 	{
 		mPosY += 3;
 	}
@@ -837,6 +839,8 @@ bool checkCollisionPolice(Police* p, Car* car)
 
 Uint32 moreBeer(Uint32 x, void *p)
 {
+
+
 	Beer b;
 	std::vector<Beer>beers;
 	beers.push_back(b);
