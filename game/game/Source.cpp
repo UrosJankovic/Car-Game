@@ -76,7 +76,7 @@ public:
 	void render();
 	int getX();
 	int getY();
-	SDL_Rect BeerPos;
+	//SDL_Rect BeerPos;
 
 private:
 	//The X and Y offsets of the beer
@@ -174,7 +174,7 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-//Uint32 moreBeer(Uint32 interval, void* param);
+Uint32 moreBeer(Uint32 x, void* p);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -504,18 +504,12 @@ int Car::getY()
 
 Beer::Beer()
 {
-
-
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
 	mPosY = 0;
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
-	BeerPos.x = mPosX;
-	BeerPos.y = mPosY;
-	BeerPos.w = BEER_WIDTH;
-	BeerPos.h = BEER_HEIGHT;
 }
 void Beer::move()
 {
@@ -843,11 +837,10 @@ Uint32 moreBeer(Uint32 x, void *p)
 {
 	Beer b;
 	b.beers.push_back(&b);
-	for (auto &b : b.beers)
+	for (auto&b : b.beers)
 	{
 		b->move();
 	}
-	std::cout << "moving" << std::endl;
 	return 0;
 }
 
@@ -881,16 +874,19 @@ int main(int argc, char* args[])
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
 			
-			//Set callback
-			SDL_TimerID timerID= (2*500, moreBeer, NULL);
+		
 			
 
 			//The car that will be moving around on the screen
 			Car car;
 			Beer b;
 			Police p;
-			//std::vector<Beer>beers;
 			b.beers.push_back(&b);
+			
+
+			//Set callback
+			SDL_TimerID timerID = SDL_AddTimer(1000, moreBeer, NULL);
+
 			std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
@@ -946,7 +942,7 @@ int main(int argc, char* args[])
 						b->beers.clear();
 						startTime = timer.getTicks() + 5000;
 					    
-						std::cout << "Collision with beer!" << std::endl;
+						std::cout << "Collision with beer!Plus 500 points!" << std::endl;
 					}
 				}
 				
@@ -987,8 +983,9 @@ int main(int argc, char* args[])
 				for (auto &b : b.beers)
 				{
 					b->render();
-					//b.move();
+				//	b->move();
 				}
+				
 			    for (auto &p : police)
 				{
 					p.render();
@@ -999,12 +996,13 @@ int main(int argc, char* args[])
 				gPausePromptTexture.render(30, 20);
 				gTimeTextTexture.render(30, 0);
 			
-
+				
 				//Update screen
 				SDL_RenderPresent(gRenderer);
 				
 			}
 			SDL_RemoveTimer(timerID);
+		
 		}
 	}
 	//Free resources and close SDL
