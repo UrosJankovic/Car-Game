@@ -104,6 +104,8 @@ public:
 	void render();
 	int getX();
 	int getY();
+	//Police *p;
+	//static std::vector<Police>police;
 
 private:
 	//The X and Y offsets of the police
@@ -176,7 +178,10 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-//Uint32 moreBeer(Uint32 x, void* p);
+Uint32 moreBeermove(Uint32 x, void* p);
+Uint32 morePolicemove(Uint32 u, void *w);
+//Uint32 moreBeerrender(Uint32 y, void *q);
+Uint32 morePolicerender(Uint32 o, void*l);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -508,7 +513,7 @@ Beer::Beer()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = -2;
+	mPosY = 0;
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
@@ -580,6 +585,7 @@ void Police::move()
 	{
 		mPosY += 4;
 	}
+
 }
 void Police::render()
 {
@@ -664,34 +670,34 @@ bool loadMedia()
 	//Loading success flag
 	bool success = true;
 
-	//Load Foo' texture
-	if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/car.png"))
+	//Load Car' texture
+	if (!gCarTexture.loadFromFile("images/car.png"))
 	{
 		printf("Failed to load Foo' texture image!\n");
 		success = false;
 	}
 
 	//Load background texture
-	if (!gBackgroundTexture.loadFromFile("C:/Users/Uros/source/repos/game/CarBackground2d.png"))
+	if (!gBackgroundTexture.loadFromFile("images/CarBackground2d.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
-	//Load background texture
-	if (!gBeerTexture.loadFromFile("C:/Users/Uros/source/repos/game/BeerFinalPic.png"))
+	//Load beer texture
+	if (!gBeerTexture.loadFromFile("images/BeerFinalPic.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
-	//Load background texture
-	if (!gPoliceTexture.loadFromFile("C:/Users/Uros/source/repos/game/PoliceFinalPic.png"))
+	//Load police texture
+	if (!gPoliceTexture.loadFromFile("images/PoliceFinalPic.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 
 	//Open the font
-	gFont = TTF_OpenFont("C:/Users/Uros/source/repos/game/lazy.ttf", 14);
+	gFont = TTF_OpenFont("images/lazy.ttf", 14);
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -838,41 +844,47 @@ bool checkCollisionPolice(Police* p, Car* car)
 }
 
 //ERROR THAT THEY ARE RENDERED AT SAME POSITION EVERY TIME, AND IT RENDERS ONLY ONE OF EACH
-Beer b;
-std::vector<Beer>beers;
-Police p;
-std::vector<Police>police;
+//Beer b;
+//Police p;
 
+std::vector<Police>police;
+std::vector<Beer>beers;
 Uint32 moreBeermove(Uint32 x, void *p)
 {
-	for (auto&b : beers)
+	
+	for (auto it = beers.begin(); it != beers.end(); it++)
 	{
-		b.move();
-	}
+		it->move();
+	}	
+
 	return 0;
 }
 Uint32 moreBeerrender(Uint32 y, void *q)
 {
-	for (auto&b : beers)
+	
+	for (auto it = beers.begin(); it != beers.end(); it++)
 	{
-		b.render();
-	}	
+		it->render();
+	}
 	return 0;
 }
 Uint32 morePolicemove(Uint32 u, void *w)
 {
-	for (auto&p : police)
+	for (auto it = police.begin(); it !=police.end(); it++)
 	{
-		p.move();
+		it->move();
 	}
+	
 	return 0;
 }
 Uint32 morePolicerender(Uint32 o, void*l)
-{
-	for (auto&p : police)
+{ 
+
+	for (auto it = police.begin(); it != police.end(); it++)
 	{
-		p.render();
+		it->render();
 	}
+	
 	return 0;
 }
 
@@ -881,6 +893,7 @@ int main(int argc, char* args[])
 {
 
 	srand(time(NULL));
+
 
 	//Start up SDL and create window
 	if (!init())
@@ -905,21 +918,20 @@ int main(int argc, char* args[])
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
 			
-			SDL_TimerID timerID;// = SDL_AddTimer(2000, moreBeermove, NULL);
-			SDL_TimerID timerID1;// = SDL_AddTimer(2000, moreBeerrender, NULL);
-			SDL_TimerID timerID2; //= SDL_AddTimer(1000, morePolicerender, NULL);
-			SDL_TimerID timerID3; //= SDL_AddTimer(1000, morePolicemove, NULL);
+			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
+			SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
+			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
+			SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
+			
 
 
 			//The car that will be moving around on the screen
 			Car car;
-			//Police p;
-			//Beer b;
-			//std::vector<Beer>beers;
+			Police p;
+			Beer b;
 			beers.push_back(b);
 			
 			
-			//std::vector<Police>police;
 			police.push_back(p);
 			LTimer timer;
 			Uint32 startTime = 0;
@@ -965,16 +977,14 @@ int main(int argc, char* args[])
 				}
 				//Move the car
 				car.move();
-
-				//MOVING THE POLICE AND BEER HERE
-				timerID = SDL_AddTimer(2000, moreBeermove, NULL);
+				SDL_AddTimer(2000, moreBeermove, NULL);
+				SDL_AddTimer(1000, morePolicemove, NULL);
 				
-				timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
-				
-
+				//If collision
 				for (auto &b:beers)
 				{
 					if (checkCollision(&b, &car) == true)
+
 					{
 						beers.clear();
 						startTime = timer.getTicks() + 3000;
@@ -991,12 +1001,14 @@ int main(int argc, char* args[])
 						police.clear();
 						timer.pause();
 						
-						std::cout << "Your score is:" << timer.getTicks() + startTime;
-						std::cout << "Collision with police!" << std::endl;
+						std::cout << "Collision with police!GAME OVER!" << std::endl;
+						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
+						
 						
 					}
 				}
-				
+
+			
 
 				//Set text to be rendered-startTime
 				timeText.str("");
@@ -1012,21 +1024,21 @@ int main(int argc, char* args[])
 
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
-
+				
 				//Render car to the screen
 				car.render();
+				for (auto it = police.begin(); it != police.end(); it++)
+				{
+					it->render();
+				}
 				
-				//RENDERING BEER HERE
-				for (auto&b : beers)
+				for (auto it = beers.begin(); it != beers.end(); it++)
 				{
-					timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
-					
+					it->render();
 				}
-				//RENDERING POLICE HERE
-			    for (auto &p : police)
-				{
-					timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
-				}
+				
+				
+				
 				
 				gStartPromptTexture.render(30, 40);
 				gPausePromptTexture.render(30, 20);
@@ -1043,9 +1055,12 @@ int main(int argc, char* args[])
 			SDL_RemoveTimer(timerID3);
 		
 		}
-	}
+	} 
 	//Free resources and close SDL
 	close();
+
+	system("pause");
+
 	return 0;
 
 }
