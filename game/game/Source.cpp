@@ -74,8 +74,7 @@ public:
 	//Moves the beer
 	void move();
 	void stop();
-	//Beer *b;
-	//std::vector<Beer*>beers;
+
 
 	//Shows the beer on the screen relative to the camera
 	void render();
@@ -107,8 +106,7 @@ public:
 	void render();
 	int getX();
 	int getY();
-	//Police *p;
-	//static std::vector<Police>police;
+	
 
 private:
 	//The X and Y offsets of the police
@@ -199,10 +197,10 @@ LTexture gCarTexture; //Car Texture
 LTexture gBeerTexture; //Beer Texture
 LTexture gPoliceTexture; //Police Texture
 LTexture gBackgroundTexture; //Background Texture
-LTexture gTimeTextTexture;
-LTexture gStartPromptTexture;
-LTexture gPausePromptTexture; // Timer Textures	
-LTexture GameOverTex;
+LTexture gTimeTextTexture; //Timer Texture
+LTexture gStartPromptTexture; //Timer Texture
+LTexture gPausePromptTexture; // Timer Texture	
+LTexture GameOverTex; //Game Over Texture
 
 
 
@@ -725,6 +723,8 @@ bool loadMedia()
 			success = false;
 		}
 	
+	
+	
 	//Load GameOver texture
 	if (!GameOverTex.loadFromFile("images/GameOver.png"))
 	{
@@ -1115,9 +1115,6 @@ int main(int argc, char* args[])
 
 	//Free resources and close SDL
 	close();
-
-	system("pause");
-
 
 	return 0;
 
