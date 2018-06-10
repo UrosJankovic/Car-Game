@@ -58,7 +58,8 @@ private:
 	//Image dimensions
 	int mWidth;
 	int mHeight;
-	
+	int mWidth1;
+	int mHeight1;
 };
 class Beer
 {
@@ -73,7 +74,8 @@ public:
 	//Moves the beer
 	void move();
 	void stop();
-
+	//Beer *b;
+	//std::vector<Beer*>beers;
 
 	//Shows the beer on the screen relative to the camera
 	void render();
@@ -105,7 +107,8 @@ public:
 	void render();
 	int getX();
 	int getY();
-	
+	//Police *p;
+	//static std::vector<Police>police;
 
 private:
 	//The X and Y offsets of the police
@@ -171,7 +174,6 @@ private:
 	bool mStarted;
 };
 
-
 //Starts up SDL and creates window
 bool init();
 //Loads media
@@ -192,6 +194,7 @@ TTF_Font* gFont = NULL;
 //The music that will be played
 Mix_Music *gMusic = NULL;
 Mix_Chunk *gEx = NULL;
+Mix_Chunk *Bonus = NULL;
 
 //Scene textures
 LTexture gCarTexture; //Car Texture
@@ -201,7 +204,7 @@ LTexture gBackgroundTexture; //Background Texture
 LTexture gTimeTextTexture;
 LTexture gStartPromptTexture;
 LTexture gPausePromptTexture; // Timer Textures	
-LTexture GameOverTex; //Game Over Texture which doesn't work 
+LTexture GameOverTex;
 
 
 
@@ -525,7 +528,7 @@ Beer::Beer()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = 0;
+	mPosY = -100;
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
@@ -577,7 +580,7 @@ Police::Police()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = 0;
+	mPosY = -100;
 
 	//Initialize the velocity
 	mVelX = 0;
@@ -692,15 +695,17 @@ bool init()
 
 bool loadMedia()
 {
+
 	//Loading success flag
 	bool success = true;
 
 	//Load Car' texture
-	if (!gCarTexture.loadFromFile("images/car.png"))
-	{
-		printf("Failed to load Foo' texture image!\n");
-		success = false;
-	}
+		if (!gCarTexture.loadFromFile("images/car.png"))
+		{
+			printf("Failed to load Foo' texture image!\n");
+			success = false;
+		}
+	
 
 	//Load background texture
 	if (!gBackgroundTexture.loadFromFile("images/CarBackground2d.png"))
@@ -715,11 +720,13 @@ bool loadMedia()
 		success = false;
 	}
 	//Load police texture
-	if (!gPoliceTexture.loadFromFile("images/PoliceFinalPic.png"))
-	{
-		printf("Failed to load background texture image!\n");
-		success = false;
-	}
+	
+		if (!gPoliceTexture.loadFromFile("images/PoliceFinalPic.png"))
+		{
+			printf("Failed to load background texture image!\n");
+			success = false;
+		}
+	
 	//Load GameOver texture
 	if (!GameOverTex.loadFromFile("images/GameOver.png"))
 	{
@@ -735,6 +742,13 @@ bool loadMedia()
 	}
 	//Load music
 	gEx = Mix_LoadWAV("images/Explosion.wav");
+	if (gMusic == NULL)
+	{
+		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	//Load music
+	Bonus = Mix_LoadWAV("images/Bonus.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
@@ -782,7 +796,8 @@ void close()
 	gPausePromptTexture.free();
 	GameOverTex.free();
 
-
+	Mix_FreeChunk(Bonus);
+	Bonus = NULL;
 	//Free the sound effects
 	Mix_FreeChunk(gEx);
 	gEx = NULL;
@@ -793,6 +808,7 @@ void close()
 	//Free global font
 	TTF_CloseFont(gFont);
 	gFont = NULL;
+
 
 	//Destroy window	
 	SDL_DestroyRenderer(gRenderer);
@@ -898,9 +914,6 @@ bool checkCollisionPolice(Police* p, Car* car)
 	return true;
 }
 
-//ERROR THAT THEY ARE RENDERED AT SAME POSITION EVERY TIME, AND IT RENDERS ONLY ONE OF EACH
-//Beer b;
-//Police p;
 
 std::vector<Police>police;
 std::vector<Beer>beers;
@@ -914,15 +927,15 @@ Uint32 moreBeermove(Uint32 x, void *p)
 
 	return 0;
 }
-Uint32 moreBeerrender(Uint32 y, void *q)
-{
-	
-	for (auto it = beers.begin(); it != beers.end(); it++)
-	{
-		it->render();
-	}
-	return 0;
-}
+//Uint32 moreBeerrender(Uint32 y, void *q)
+//{
+//	
+//	for (auto it = beers.begin(); it != beers.end(); it++)
+//	{
+//		it->render();
+//	}
+//	return 0;
+//}
 Uint32 morePolicemove(Uint32 u, void *w)
 {
 	for (auto it = police.begin(); it !=police.end(); it++)
@@ -932,16 +945,16 @@ Uint32 morePolicemove(Uint32 u, void *w)
 	
 	return 0;
 }
-Uint32 morePolicerender(Uint32 o, void*l)
-{ 
-
-	for (auto it = police.begin(); it != police.end(); it++)
-	{
-		it->render();
-	}
-	
-	return 0;
-}
+//Uint32 morePolicerender(Uint32 o, void*l)
+//{ 
+//
+//	for (auto it = police.begin(); it != police.end(); it++)
+//	{
+//		it->render();
+//	}
+//	
+//	return 0;
+//}
 
 
 int main(int argc, char* args[])
@@ -974,12 +987,10 @@ int main(int argc, char* args[])
 			SDL_Color textColor = { 255,255,255 };
 			
 			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
-			SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
+			//SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
 			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
-			SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
+			//SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
 			
-		
-
 
 			//The car that will be moving around on the screen
 			Car car;
@@ -994,8 +1005,6 @@ int main(int argc, char* args[])
 			std::stringstream timeText;
 			std::stringstream gameover;
 			
-		
-
 			timer.start();
 			//While application is running
 			while (!quit)
@@ -1057,6 +1066,7 @@ int main(int argc, char* args[])
 
 					{
 						beers.clear();
+						Mix_PlayChannel(-1, Bonus, 0);
 						startTime = timer.getTicks() + 3000;
 					    
 						std::cout << "Collision with beer! Plus 3000 points!" << std::endl;
@@ -1077,17 +1087,15 @@ int main(int argc, char* args[])
 						}
 						std::cout << "Collision with police!GAME OVER!" << std::endl;
 						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
-						timer.stop();
-						GameOverTex.render(0, 0); //Doesn't work
+						timer.pause();
+						GameOverTex.render(0, 0);
 					}
 					
 				}
-			
 		
-						
 				//Set text to be rendered-startTime
 				timeText.str("");
-				timeText << "Score:" << timer.getTicks()+startTime;
+				timeText << "Your score is:" << timer.getTicks()+startTime;
 				//Render text
 				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
 				{
@@ -1111,20 +1119,21 @@ int main(int argc, char* args[])
 				{
 					it->render();
 				}
+				
 			
 				
 				gStartPromptTexture.render(30, 40);
 				gPausePromptTexture.render(30, 20);
 				gTimeTextTexture.render(30, 0);
-	
+
 				//Update screen
 				SDL_RenderPresent(gRenderer);
-	
 			}
 			SDL_RemoveTimer(timerID);
-			SDL_RemoveTimer(timerID1);
-			SDL_RemoveTimer(timerID2);
+			//SDL_RemoveTimer(timerID1);
+			//SDL_RemoveTimer(timerID2);
 			SDL_RemoveTimer(timerID3);
+		
 		}
 	} 
 
