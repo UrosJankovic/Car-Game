@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_mixer.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -57,6 +58,7 @@ private:
 	//Image dimensions
 	int mWidth;
 	int mHeight;
+	
 };
 class Beer
 {
@@ -70,9 +72,8 @@ public:
 
 	//Moves the beer
 	void move();
+	void stop();
 
-	//Beer *b;
-	//std::vector<Beer*>beers;
 
 	//Shows the beer on the screen relative to the camera
 	void render();
@@ -104,8 +105,7 @@ public:
 	void render();
 	int getX();
 	int getY();
-	//Police *p;
-	//static std::vector<Police>police;
+	
 
 private:
 	//The X and Y offsets of the police
@@ -171,6 +171,7 @@ private:
 	bool mStarted;
 };
 
+
 //Starts up SDL and creates window
 bool init();
 //Loads media
@@ -180,7 +181,7 @@ void close();
 //Our test callback function
 Uint32 moreBeermove(Uint32 x, void* p);
 Uint32 morePolicemove(Uint32 u, void *w);
-//Uint32 moreBeerrender(Uint32 y, void *q);
+Uint32 moreBeerrender(Uint32 y, void *q);
 Uint32 morePolicerender(Uint32 o, void*l);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -188,6 +189,9 @@ SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 //Globally used font
 TTF_Font* gFont = NULL;
+//The music that will be played
+Mix_Music *gMusic = NULL;
+Mix_Chunk *gEx = NULL;
 
 //Scene textures
 LTexture gCarTexture; //Car Texture
@@ -196,7 +200,9 @@ LTexture gPoliceTexture; //Police Texture
 LTexture gBackgroundTexture; //Background Texture
 LTexture gTimeTextTexture;
 LTexture gStartPromptTexture;
-LTexture gPausePromptTexture; // Timer Textures														
+LTexture gPausePromptTexture; // Timer Textures	
+LTexture GameOverTex; //Game Over Texture which doesn't work 
+
 
 
 LTexture::LTexture()
@@ -259,10 +265,13 @@ bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor
 
 	//Render text surface
 	SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, textureText.c_str(), textColor);
+	
+	
 	if (textSurface != NULL)
 	{
 		//Create texture from surface pixels
 		mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface);
+		
 		if (mTexture == NULL)
 		{
 			printf("Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError());
@@ -272,10 +281,13 @@ bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor
 			//Get image dimensions
 			mWidth = textSurface->w;
 			mHeight = textSurface->h;
+		
+			
 		}
 
 		//Get rid of old surface
 		SDL_FreeSurface(textSurface);
+		
 	}
 	else
 	{
@@ -553,6 +565,12 @@ int Beer::getY()
 {
 	return mPosY;
 }
+void Beer::stop()
+{
+     mVelY=-10;
+	 mPosY = mPosY;
+	
+}
 
 
 Police::Police()
@@ -602,13 +620,14 @@ int Police::getY()
 	return mPosY;
 }
 
+
 bool init()
 {
 	//Initialization flag
 	bool success = true;
 
 	//Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) < 0)
 	{
 		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
 		success = false;
@@ -658,6 +677,12 @@ bool init()
 					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
 					success = false;
 				}
+				//Initialize SDL_mixer
+				if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+				{
+					printf("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
+					success = false;
+				}
 			}
 		}
 	}
@@ -695,6 +720,26 @@ bool loadMedia()
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
+	//Load GameOver texture
+	if (!GameOverTex.loadFromFile("images/GameOver.png"))
+	{
+		printf("Failed to load background texture image!\n");
+		success = false;
+	}
+	//Load music
+	gMusic = Mix_LoadMUS("images/Wind.wav");
+	if (gMusic == NULL)
+	{
+		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
+	//Load music
+	gEx = Mix_LoadWAV("images/Explosion.wav");
+	if (gMusic == NULL)
+	{
+		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
+		success = false;
+	}
 
 	//Open the font
 	gFont = TTF_OpenFont("images/lazy.ttf", 14);
@@ -719,10 +764,10 @@ bool loadMedia()
 			printf("Unable to render pause/unpause prompt texture!\n");
 			success = false;
 		}
+
 	
 	}
-	
-	
+		
 	return success;
 }
 
@@ -735,6 +780,15 @@ void close()
 	gBackgroundTexture.free();
 	gTimeTextTexture.free();
 	gPausePromptTexture.free();
+	GameOverTex.free();
+
+
+	//Free the sound effects
+	Mix_FreeChunk(gEx);
+	gEx = NULL;
+	//Free the music
+	Mix_FreeMusic(gMusic);
+	gMusic = NULL;
 
 	//Free global font
 	TTF_CloseFont(gFont);
@@ -746,6 +800,7 @@ void close()
 	gWindow = NULL;
 	gRenderer = NULL;
 
+	Mix_Quit();
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
@@ -923,6 +978,7 @@ int main(int argc, char* args[])
 			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
 			SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
 			
+		
 
 
 			//The car that will be moving around on the screen
@@ -935,8 +991,9 @@ int main(int argc, char* args[])
 			police.push_back(p);
 			LTimer timer;
 			Uint32 startTime = 0;
-			//In memory text stream
 			std::stringstream timeText;
+			std::stringstream gameover;
+			
 		
 
 			timer.start();
@@ -962,10 +1019,16 @@ int main(int argc, char* args[])
 						{
 							 if (timer.isPaused())
 							 {
+								 Mix_ResumeMusic();
 								 timer.unpause();
 							 }
-							 else { timer.pause(); }
+							 else { 
+								 Mix_PauseMusic();
+								 b.stop();
+							 timer.pause(); 
+							 }
 						}
+						
 						 if (e.key.keysym.sym == SDLK_ESCAPE)
 						 {
 							 exit(0);
@@ -975,6 +1038,13 @@ int main(int argc, char* args[])
 					
 					car.handleEvent(e);
 				}
+				
+				if (Mix_PlayingMusic() == 0)
+				{
+					//Play the music
+					Mix_PlayMusic(gMusic, -1);
+				}
+
 				//Move the car
 				car.move();
 				SDL_AddTimer(2000, moreBeermove, NULL);
@@ -999,17 +1069,22 @@ int main(int argc, char* args[])
 					if (checkCollisionPolice(&p, &car) == true)
 					{
 						police.clear();
-						timer.pause();
-						
+						Mix_PlayChannel(-1, gEx, 0);
+						Mix_PauseMusic();
+						for (auto&b : beers)
+						{
+							b.stop();
+						}
 						std::cout << "Collision with police!GAME OVER!" << std::endl;
 						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
-						
-						
+						timer.stop();
+						GameOverTex.render(0, 0); //Doesn't work
 					}
+					
 				}
-
 			
-
+		
+						
 				//Set text to be rendered-startTime
 				timeText.str("");
 				timeText << "Score:" << timer.getTicks()+startTime;
@@ -1018,13 +1093,13 @@ int main(int argc, char* args[])
 				{
 					printf("Unable to render time texture!\n");
 				}
+
 				//Clear screen
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				SDL_RenderClear(gRenderer);
 
 				//Render background texture to screen
 				gBackgroundTexture.render(0, 0);
-				
 				//Render car to the screen
 				car.render();
 				for (auto it = police.begin(); it != police.end(); it++)
@@ -1036,30 +1111,28 @@ int main(int argc, char* args[])
 				{
 					it->render();
 				}
-				
-				
-				
+			
 				
 				gStartPromptTexture.render(30, 40);
 				gPausePromptTexture.render(30, 20);
 				gTimeTextTexture.render(30, 0);
-			
-				
+	
 				//Update screen
 				SDL_RenderPresent(gRenderer);
-				
+	
 			}
 			SDL_RemoveTimer(timerID);
 			SDL_RemoveTimer(timerID1);
 			SDL_RemoveTimer(timerID2);
 			SDL_RemoveTimer(timerID3);
-		
 		}
 	} 
+
 	//Free resources and close SDL
 	close();
 
 	system("pause");
+
 
 	return 0;
 
