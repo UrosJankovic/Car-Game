@@ -183,8 +183,6 @@ void close();
 //Our test callback function
 Uint32 moreBeermove(Uint32 x, void* p);
 Uint32 morePolicemove(Uint32 u, void *w);
-Uint32 moreBeerrender(Uint32 y, void *q);
-Uint32 morePolicerender(Uint32 o, void*l);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -927,15 +925,6 @@ Uint32 moreBeermove(Uint32 x, void *p)
 
 	return 0;
 }
-//Uint32 moreBeerrender(Uint32 y, void *q)
-//{
-//	
-//	for (auto it = beers.begin(); it != beers.end(); it++)
-//	{
-//		it->render();
-//	}
-//	return 0;
-//}
 Uint32 morePolicemove(Uint32 u, void *w)
 {
 	for (auto it = police.begin(); it !=police.end(); it++)
@@ -945,16 +934,7 @@ Uint32 morePolicemove(Uint32 u, void *w)
 	
 	return 0;
 }
-//Uint32 morePolicerender(Uint32 o, void*l)
-//{ 
-//
-//	for (auto it = police.begin(); it != police.end(); it++)
-//	{
-//		it->render();
-//	}
-//	
-//	return 0;
-//}
+
 
 
 int main(int argc, char* args[])
@@ -987,9 +967,7 @@ int main(int argc, char* args[])
 			SDL_Color textColor = { 255,255,255 };
 			
 			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
-			//SDL_TimerID timerID1 = SDL_AddTimer(2000, moreBeerrender, NULL);
 			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
-			//SDL_TimerID timerID2 = SDL_AddTimer(1000, morePolicerender, NULL);
 			
 
 			//The car that will be moving around on the screen
@@ -1069,7 +1047,7 @@ int main(int argc, char* args[])
 						Mix_PlayChannel(-1, Bonus, 0);
 						startTime = timer.getTicks() + 3000;
 					    
-						std::cout << "Collision with beer! Plus 3000 points!" << std::endl;
+						std::cout << "You got the beer! Plus 3000 points!" << std::endl;
 					}
 				}
 				
@@ -1085,7 +1063,7 @@ int main(int argc, char* args[])
 						{
 							b.stop();
 						}
-						std::cout << "Collision with police!GAME OVER!" << std::endl;
+						std::cout << "Not Good!GAME OVER!" << std::endl;
 						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
 						timer.pause();
 						GameOverTex.render(0, 0);
@@ -1110,11 +1088,11 @@ int main(int argc, char* args[])
 				gBackgroundTexture.render(0, 0);
 				//Render car to the screen
 				car.render();
-				for (auto it = police.begin(); it != police.end(); it++)
+				for (auto it = police.begin(); it != police.end();it++)
 				{
 					it->render();
+					
 				}
-				
 				for (auto it = beers.begin(); it != beers.end(); it++)
 				{
 					it->render();
@@ -1130,8 +1108,6 @@ int main(int argc, char* args[])
 				SDL_RenderPresent(gRenderer);
 			}
 			SDL_RemoveTimer(timerID);
-			//SDL_RemoveTimer(timerID1);
-			//SDL_RemoveTimer(timerID2);
 			SDL_RemoveTimer(timerID3);
 		
 		}
