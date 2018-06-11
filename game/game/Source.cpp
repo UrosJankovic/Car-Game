@@ -93,15 +93,15 @@ class Police
 {
 public:
 	//The dimensions of the police
-	static const int POLICE_WIDTH = 70;
-	static const int POLICE_HEIGHT = 130;
+	static const int POLICE_WIDTH = 40;
+	static const int POLICE_HEIGHT = 70;
 
 	//Initializes the variables
 	Police();
 
 	//Moves the police
 	void move();
-
+	void stop();
 	//Shows the police on the screen relative to the camera
 	void render();
 	int getX();
@@ -122,7 +122,7 @@ public:
 	static const int CAR_WIDTH = 80;
 	static const int CAR_HEIGHT = 70;
 	//Maximum axis velocity of the car
-	static const int CAR_VEL = 7;
+	static const int CAR_VEL = 8;
 	//Initializes the variables
 	Car();
 	//Takes key presses and adjusts the car's velocity
@@ -179,8 +179,8 @@ bool loadMedia();
 //Frees media and shuts down SDL
 void close();
 //Our test callback function
-Uint32 moreBeermove(Uint32 x, void* p);
-Uint32 morePolicemove(Uint32 u, void *w);
+//Uint32 moreBeermove(Uint32 x, void* p);
+//Uint32 morePolicemove(Uint32 u, void *w);
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 //The window renderer
@@ -487,7 +487,7 @@ void Car::move()
 	mPosX += mVelX;
 
 	//If the car went too far to the left or right
-	if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH - 125) || (mPosX + CAR_WIDTH <SCREEN_WIDTH - 435))
+	if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH - 135) || (mPosX + CAR_WIDTH <SCREEN_WIDTH - 435))
 	{
 		//Move bac
 		mPosX -= mVelX;
@@ -524,7 +524,7 @@ Beer::Beer()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = -100;
+	mPosY = -50;
 	//Initialize the velocity
 	mVelX = 0;
 	mVelY = 2;
@@ -545,9 +545,13 @@ void Beer::move()
 	{
 		mPosY += 3;
 	}
-	else if (SDL_GetTicks() > 20000)
+	else if (SDL_GetTicks() > 20000 && SDL_GetTicks()<30000)
 	{
 		mPosY += 4;
+	}
+	else if (SDL_GetTicks() > 20000)
+	{
+		mPosY += 6;
 	}
 }
 void Beer::render()
@@ -566,9 +570,8 @@ int Beer::getY()
 }
 void Beer::stop()
 {
-     mVelY=-10;
-	 mPosY = mPosY;
-	
+     mVelY=-1;
+	 
 }
 
 
@@ -576,7 +579,7 @@ Police::Police()
 {
 	//Initialize the offsets
 	mPosX = (rand() % 10)*30.0f + 155.0f;
-	mPosY = -100;
+	mPosY = -200;
 
 	//Initialize the velocity
 	mVelX = 0;
@@ -598,9 +601,13 @@ void Police::move()
 	{
 		mPosY += 3;
 	}
-	else if (SDL_GetTicks() > 20000)
+	else if (SDL_GetTicks() > 20000 && SDL_GetTicks()<30000)
 	{
 		mPosY += 4;
+	}
+	else if (SDL_GetTicks() > 20000)
+	{
+		mPosY += 6;
 	}
 
 }
@@ -612,13 +619,16 @@ void Police::render()
 }
 int Police::getX()
 {
-	return   mPosX;
+	return  mPosX;
 }
 int Police::getY()
 {
 	return mPosY;
 }
-
+void Police::stop()
+{
+	mVelY = -1;
+}
 
 bool init()
 {
@@ -696,7 +706,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Car' texture
-		if (!gCarTexture.loadFromFile("images/car.png"))
+		if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/car.png"))
 		{
 			printf("Failed to load Foo' texture image!\n");
 			success = false;
@@ -704,20 +714,20 @@ bool loadMedia()
 	
 
 	//Load background texture
-	if (!gBackgroundTexture.loadFromFile("images/CarBackground2d.png"))
+	if (!gBackgroundTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/CarBackground2d.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load beer texture
-	if (!gBeerTexture.loadFromFile("images/BeerFinalPic.png"))
+	if (!gBeerTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/BeerFinalPic.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load police texture
 	
-		if (!gPoliceTexture.loadFromFile("images/PoliceFinalPic.png"))
+		if (!gPoliceTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/PoliceFinalPic.png"))
 		{
 			printf("Failed to load background texture image!\n");
 			success = false;
@@ -726,27 +736,27 @@ bool loadMedia()
 	
 	
 	//Load GameOver texture
-	if (!GameOverTex.loadFromFile("images/GameOver.png"))
+	if (!GameOverTex.loadFromFile("C:/Users/Uros/source/repos/game/game/images/GameOver.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load music
-	gMusic = Mix_LoadMUS("images/Wind.wav");
+	gMusic = Mix_LoadMUS("C:/Users/Uros/source/repos/game/game/images/Wind.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 	//Load music
-	gEx = Mix_LoadWAV("images/Explosion.wav");
+	gEx = Mix_LoadWAV("C:/Users/Uros/source/repos/game/game/images/Explosion.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 	//Load music
-	Bonus = Mix_LoadWAV("images/Bonus.wav");
+	Bonus = Mix_LoadWAV("C:/Users/Uros/source/repos/game/game/images/Bonus.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
@@ -754,7 +764,7 @@ bool loadMedia()
 	}
 
 	//Open the font
-	gFont = TTF_OpenFont("images/lazy.ttf", 14);
+	gFont = TTF_OpenFont("C:/Users/Uros/source/repos/game/game/images/lazy.ttf", 14);
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
@@ -848,7 +858,7 @@ bool checkCollision(Beer* b, Car* car)
 	double topE = ey;
 	double bottomE = ey + eh;
 	//check if objects are in different areas (no collision)
-	if (bottomH <= topH)
+	if (bottomH <= topE)
 	{
 		return false;
 	}
@@ -892,7 +902,53 @@ bool checkCollisionPolice(Police* p, Car* car)
 	double topE = ey;
 	double bottomE = ey + eh;
 	//check if objects are in different areas (no collision)
-	if (bottomH <= topH)
+	if (bottomH <= topE)
+	{
+		return false;
+	}
+	if (topH >= bottomE)
+	{
+		return false;
+	}
+	if (rightH <= leftE)
+	{
+		return false;
+	}
+	if (leftH >= rightE)
+	{
+		return false;
+	}
+	//if there is a collision
+	return true;
+}
+bool checkCollisionPoliceBeer(Police *p, Beer* b)
+{
+	std::vector<Police*>police;
+	std::vector<Beer*>beers;
+	beers.push_back(b);
+	police.push_back(p);
+	//getting position of police car
+	double ex = p->getX();
+	double ey = p->getY();
+	double ew = p->POLICE_WIDTH;
+	double eh = p->POLICE_HEIGHT;
+	//getting position of player's car
+	double hx = b->getX();
+	double hy = b->getY();
+	double hw = b->BEER_WIDTH;
+	double hh = b->BEER_HEIGHT;
+	//Calculate the sides of player's car
+	double leftH = hx;
+	double rightH = hx + hw;
+	double topH = hy;
+	double bottomH = hy + hh;
+	//	Calculate the sides of police car
+	double leftE = ex;
+	double rightE = ex + ew;
+	double topE = ey;
+	double bottomE = ey + eh;
+	//check if objects are in different areas (no collision)
+	if (bottomH <= topE)
 	{
 		return false;
 	}
@@ -913,27 +969,27 @@ bool checkCollisionPolice(Police* p, Car* car)
 }
 
 
-std::vector<Police>police;
-std::vector<Beer>beers;
-Uint32 moreBeermove(Uint32 x, void *p)
-{
-	
-	for (auto it = beers.begin(); it != beers.end(); it++)
-	{
-		it->move();
-	}	
-
-	return 0;
-}
-Uint32 morePolicemove(Uint32 u, void *w)
-{
-	for (auto it = police.begin(); it !=police.end(); it++)
-	{
-		it->move();
-	}
-	
-	return 0;
-}
+//std::vector<Police*>police;
+//std::vector<Beer*>beers;
+//Uint32 moreBeermove(Uint32 x, void *p)
+//{
+//	for (auto&b : beers)
+//	{
+//		b->move();
+//	}
+//	
+//
+//	return x;
+//}
+//Uint32 morePolicemove(Uint32 u, void *w)
+//{
+//	for (auto&p : police)
+//	{
+//		p->move();
+//	}
+//	
+//	return u;
+//}
 
 
 
@@ -965,29 +1021,29 @@ int main(int argc, char* args[])
 
 			//Set text color as white
 			SDL_Color textColor = { 255,255,255 };
-			
-			SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
-			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);
-			
+
+			/*SDL_TimerID timerID = SDL_AddTimer(2000, moreBeermove, NULL);
+			SDL_TimerID timerID3 = SDL_AddTimer(1000, morePolicemove, NULL);*/
+
 
 			//The car that will be moving around on the screen
 			Car car;
 			Police p;
-			Beer b;
-			beers.push_back(b);
-			
-			
+			std::vector<Police>police;
 			police.push_back(p);
+			Beer b;
+			std::vector<Beer>beers;
+			beers.push_back(b);
 			LTimer timer;
 			Uint32 startTime = 0;
 			std::stringstream timeText;
 			std::stringstream gameover;
-			
+
 			timer.start();
 			//While application is running
 			while (!quit)
 			{
-				
+
 				//Handle events on queue
 				while (SDL_PollEvent(&e) != 0)
 				{
@@ -1002,30 +1058,41 @@ int main(int argc, char* args[])
 					{
 
 						//Pause/unpause
-						 if (e.key.keysym.sym == SDLK_p)
+						if (e.key.keysym.sym == SDLK_p)
 						{
-							 if (timer.isPaused())
-							 {
-								 Mix_ResumeMusic();
-								 timer.unpause();
-							 }
-							 else { 
-								 Mix_PauseMusic();
-								 b.stop();
-							 timer.pause(); 
-							 }
+							if (timer.isPaused())
+							{
+
+								Mix_ResumeMusic();
+								timer.unpause();
+							}
+							else
+							{
+
+								Mix_PauseMusic();
+								timer.pause();
+								for (auto&b : beers)
+								{
+									b.stop();
+								}
+								for (auto&p : police)
+								{
+									p.stop();
+								}
+
+							}
 						}
-						
-						 if (e.key.keysym.sym == SDLK_ESCAPE)
-						 {
-							 exit(0);
-						 }
-					
+
+						if (e.key.keysym.sym == SDLK_ESCAPE)
+						{
+							exit(0);
+						}
+
 					}
-					
+
 					car.handleEvent(e);
 				}
-				
+
 				if (Mix_PlayingMusic() == 0)
 				{
 					//Play the music
@@ -1034,46 +1101,72 @@ int main(int argc, char* args[])
 
 				//Move the car
 				car.move();
-				SDL_AddTimer(2000, moreBeermove, NULL);
-				SDL_AddTimer(1000, morePolicemove, NULL);
-				
-				//If collision
-				for (auto &b:beers)
+				for (auto&b : beers)
 				{
+					b.move();
+				}
+				for (auto&p : police)
+				{
+					p.move();
+				}
+				//If collision
+				for (auto&b:beers)
+				{
+					
 					if (checkCollision(&b, &car) == true)
-
 					{
 						beers.clear();
+						Beer*b = new Beer;
+						beers.push_back(*b);
+						Police*p = new Police;
+						police.push_back(*p);
+						
 						Mix_PlayChannel(-1, Bonus, 0);
 						startTime = timer.getTicks() + 3000;
-					    
+
 						std::cout << "You got the beer! Plus 3000 points!" << std::endl;
+					}
+					else if (checkCollisionPoliceBeer(&p, &b) == true)
+					{
+						police.clear();
+					}
+					else if (b.getY()>SCREEN_HEIGHT)
+					{
+						police.clear();
+						beers.clear();
+						Mix_PauseMusic();
+						std::cout << "YOU DIDN'T DRINK YOUR BEER!GAME OVER!" << std::endl;
+						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
+						timer.pause();
 					}
 				}
 				
+
+				
 				//If collision
-				for (auto &p:police)
+				for (auto &p : police)
 				{
 					if (checkCollisionPolice(&p, &car) == true)
 					{
 						police.clear();
+						beers.clear();
 						Mix_PlayChannel(-1, gEx, 0);
 						Mix_PauseMusic();
-						for (auto&b : beers)
-						{
-							b.stop();
-						}
 						std::cout << "Not Good!GAME OVER!" << std::endl;
 						std::cout << "Your score is:" << timer.getTicks() + startTime << std::endl;
 						timer.pause();
 						GameOverTex.render(0, 0);
 					}
-					
+					if (checkCollisionPoliceBeer(&p, &b) == true)
+					{
+						police.clear();
+					}
 				}
-		
+				
+
 				//Set text to be rendered-startTime
 				timeText.str("");
-				timeText << "Your score is:" << timer.getTicks()+startTime;
+				timeText << "Your score is:" << timer.getTicks() + startTime;
 				//Render text
 				if (!gTimeTextTexture.loadFromRenderedText(timeText.str().c_str(), textColor))
 				{
@@ -1088,18 +1181,18 @@ int main(int argc, char* args[])
 				gBackgroundTexture.render(0, 0);
 				//Render car to the screen
 				car.render();
-				for (auto it = police.begin(); it != police.end();it++)
+				for (auto&p : police)
 				{
-					it->render();
-					
-				}
-				for (auto it = beers.begin(); it != beers.end(); it++)
-				{
-					it->render();
+					p.render();
 				}
 				
-			
-				
+				for (auto&b : beers)
+				{
+					b.render();
+				}
+
+
+
 				gStartPromptTexture.render(30, 40);
 				gPausePromptTexture.render(30, 20);
 				gTimeTextTexture.render(30, 0);
@@ -1107,15 +1200,12 @@ int main(int argc, char* args[])
 				//Update screen
 				SDL_RenderPresent(gRenderer);
 			}
-			SDL_RemoveTimer(timerID);
-			SDL_RemoveTimer(timerID3);
-		
+			/*SDL_RemoveTimer(timerID);
+			SDL_RemoveTimer(timerID3);*/
 		}
-	} 
+	}
 
 	//Free resources and close SDL
 	close();
-
 	return 0;
-
 }
