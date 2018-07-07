@@ -706,7 +706,7 @@ bool loadMedia()
 	bool success = true;
 
 	//Load Car' texture
-		if (!gCarTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/car.png"))
+		if (!gCarTexture.loadFromFile("images/car.png"))
 		{
 			printf("Failed to load Foo' texture image!\n");
 			success = false;
@@ -714,20 +714,20 @@ bool loadMedia()
 	
 
 	//Load background texture
-	if (!gBackgroundTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/CarBackground2d.png"))
+	if (!gBackgroundTexture.loadFromFile("images/CarBackground2d.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load beer texture
-	if (!gBeerTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/BeerFinalPic.png"))
+	if (!gBeerTexture.loadFromFile("images/BeerFinalPic.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load police texture
 	
-		if (!gPoliceTexture.loadFromFile("C:/Users/Uros/source/repos/game/game/images/PoliceFinalPic.png"))
+		if (!gPoliceTexture.loadFromFile("images/PoliceFinalPic.png"))
 		{
 			printf("Failed to load background texture image!\n");
 			success = false;
@@ -736,27 +736,27 @@ bool loadMedia()
 	
 	
 	//Load GameOver texture
-	if (!GameOverTex.loadFromFile("C:/Users/Uros/source/repos/game/game/images/GameOver.png"))
+	if (!GameOverTex.loadFromFile("images/GameOver.png"))
 	{
 		printf("Failed to load background texture image!\n");
 		success = false;
 	}
 	//Load music
-	gMusic = Mix_LoadMUS("C:/Users/Uros/source/repos/game/game/images/Wind.wav");
+	gMusic = Mix_LoadMUS("images/Wind.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 	//Load music
-	gEx = Mix_LoadWAV("C:/Users/Uros/source/repos/game/game/images/Explosion.wav");
+	gEx = Mix_LoadWAV("images/Explosion.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
 		success = false;
 	}
 	//Load music
-	Bonus = Mix_LoadWAV("C:/Users/Uros/source/repos/game/game/images/Bonus.wav");
+	Bonus = Mix_LoadWAV("images/Bonus.wav");
 	if (gMusic == NULL)
 	{
 		printf("Failed to load beat music! SDL_mixer Error: %s\n", Mix_GetError());
@@ -764,7 +764,7 @@ bool loadMedia()
 	}
 
 	//Open the font
-	gFont = TTF_OpenFont("C:/Users/Uros/source/repos/game/game/images/lazy.ttf", 14);
+	gFont = TTF_OpenFont("images/lazy.ttf", 14);
 	if (gFont == NULL)
 	{
 		printf("Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError());
